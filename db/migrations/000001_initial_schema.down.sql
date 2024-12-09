@@ -9,4 +9,4 @@ DROP TABLE IF EXISTS user;
 DROP TABLE IF EXISTS organization;
 
 -- 外部キー制約を有効化
-SET FOREIGN_KEY_CHECKS = 1;
+
