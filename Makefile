@@ -12,7 +12,7 @@ wire:
 
 .PHONY: go run
 run-local:
-	go run cmd/server/main.go cmd/server/wire_gen.go || true
+	go run cmd/server/main.go
 
 .PHONY: migrate up
 migrate-up:
