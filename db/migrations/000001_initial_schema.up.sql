@@ -62,8 +62,7 @@ CREATE TABLE invoice (
     consumption_tax_rate DECIMAL(5, 2),
     total_amount DECIMAL(10, 2) NOT NULL,
     payment_due_date DATE NOT NULL,
-    status ENUM('未処理', '処理中', '支払い済み', 'エラー') NOT NULL DEFAULT '未処理',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status ENUM('pending', 'processing', 'paid', 'error') NOT NULL DEFAULT 'pending',    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (organization_id) REFERENCES organization(organization_id) ON DELETE CASCADE,
     FOREIGN KEY (client_id) REFERENCES client(client_id) ON DELETE CASCADE
