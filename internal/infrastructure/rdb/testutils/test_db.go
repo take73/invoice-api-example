@@ -31,7 +31,7 @@ func SetupTestDB(dbName string) *gorm.DB {
 	dbConn, _ := db.DB()
 	defer dbConn.Close()
 
-	if createDatabase(db, dbName); err != nil {
+	if err := createDatabase(db, dbName); err != nil {
 		panic(err)
 	}
 
@@ -53,11 +53,7 @@ func createDatabase(db *gorm.DB, dbName string) error {
 }
 
 func connectDB(dbName string, retryCount int) (*gorm.DB, error) {
-	str := loadConfig(dbName).FormatDSN()
-	// conn, err := gorm.Open(gormmysql.Open(loadConfig(dbName).FormatDSN()), &gorm.Config{
-	// 	NamingStrategy: schema.NamingStrategy{SingularTable: true},
-	// })
-	conn, err := gorm.Open(gormmysql.Open(str), &gorm.Config{
+	conn, err := gorm.Open(gormmysql.Open(loadConfig(dbName).FormatDSN()), &gorm.Config{
 		NamingStrategy: schema.NamingStrategy{SingularTable: true},
 	})
 	if err != nil {
