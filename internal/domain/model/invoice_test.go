@@ -1,17 +1,17 @@
 package model_test
 
 import (
-	"math/big"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/shopspring/decimal"
 	"github.com/take73/invoice-api-example/internal/domain/model"
 )
 
 func Test_Invoice_Calculate(t *testing.T) {
 	tests := []struct {
 		name    string
-		amount  float64
+		amount  int64
 		feeRate float64
 		taxRate float64
 		want    model.Invoice
@@ -22,10 +22,12 @@ func Test_Invoice_Calculate(t *testing.T) {
 			feeRate: 0.04,
 			taxRate: 0.1,
 			want: model.Invoice{
-				Fee:         big.NewRat(40, 1),    // 10000 * 0.04 = 400
-				Tax:         big.NewRat(4, 1),     // 400 * 0.1 = 40
-				TotalAmount: big.NewRat(10440, 1), // 10000 + 400 + 40 = 10440
+				Amount:      decimal.NewFromInt(10000),
+				FeeRate:     0.04,
+				Fee:         decimal.NewFromInt(400),
+				Tax:         decimal.NewFromInt(40),
 				TaxRate:     0.1,
+				TotalAmount: decimal.NewFromInt(10440),
 			},
 		},
 		{
@@ -34,10 +36,12 @@ func Test_Invoice_Calculate(t *testing.T) {
 			feeRate: 0.03,
 			taxRate: 0.08,
 			want: model.Invoice{
-				Fee:         big.NewRat(150, 1),  // 5000 * 0.03 = 150
-				Tax:         big.NewRat(12, 1),   // 150 * 0.08 = 12
-				TotalAmount: big.NewRat(5150, 1), // 5000 + 150 + 12 = 5150
-				TaxRate:     0.8,
+				Amount:      decimal.NewFromInt(5000),
+				FeeRate:     0.03,
+				Fee:         decimal.NewFromInt(150),
+				TaxRate:     0.08,
+				Tax:         decimal.NewFromInt(12),
+				TotalAmount: decimal.NewFromInt(5162),
 			},
 		},
 	}
@@ -45,7 +49,7 @@ func Test_Invoice_Calculate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			invoice := model.Invoice{
-				Amount:  big.NewRat(0, 1).SetFloat64(tt.amount),
+				Amount:  decimal.NewFromInt(tt.amount),
 				FeeRate: tt.feeRate,
 			}
 
@@ -68,43 +72,43 @@ func Test_Invoice_Calculate(t *testing.T) {
 func Test_Invoice_TotalAmountAsInt(t *testing.T) {
 	tests := []struct {
 		name        string
-		totalAmount *big.Rat
+		totalAmount decimal.Decimal
 		expectedInt int
 		expectError bool
 	}{
 		{
 			name:        "正常値 (整数値)",
-			totalAmount: big.NewRat(10440, 1), // 10440.0
+			totalAmount: decimal.NewFromInt(10440),
 			expectedInt: 10440,
 			expectError: false,
 		},
 		{
 			name:        "小数点以下切り捨て (10.99 -> 10)",
-			totalAmount: big.NewRat(1099, 100), // 10.99
+			totalAmount: decimal.NewFromFloat(10.99),
 			expectedInt: 10,
 			expectError: false,
 		},
 		{
 			name:        "小数点以下切り捨て (10.00000001 -> 10)",
-			totalAmount: big.NewRat(1000000001, 100000000), // 10.00000001
+			totalAmount: decimal.NewFromFloat(10.00000001),
 			expectedInt: 10,
 			expectError: false,
 		},
 		{
 			name:        "ゼロ (0.999 -> 0)",
-			totalAmount: big.NewRat(999, 1000), // 0.999
+			totalAmount: decimal.NewFromFloat(0.999),
 			expectedInt: 0,
 			expectError: false,
 		},
 		{
 			name:        "負の値 (-10.99 -> -10)",
-			totalAmount: big.NewRat(-1099, 100), // -10.99
+			totalAmount: decimal.NewFromFloat(-10.99),
 			expectedInt: -10,
 			expectError: false,
 		},
 		{
 			name:        "非常に小さい値",
-			totalAmount: big.NewRat(1, 100000000), // 0.00000001
+			totalAmount: decimal.NewFromFloat(0.00000001),
 			expectedInt: 0,
 			expectError: false,
 		},
@@ -118,19 +122,7 @@ func Test_Invoice_TotalAmountAsInt(t *testing.T) {
 			}
 
 			// TotalAmountAsInt をテスト
-			got, err := invoice.TotalAmountAsInt()
-
-			// エラーの検証
-			if tt.expectError {
-				if err == nil {
-					t.Errorf("expected error but got nil")
-				}
-				return
-			}
-			if err != nil {
-				t.Errorf("unexpected error: %v", err)
-				return
-			}
+			got := invoice.TotalAmountAsInt()
 
 			// 結果の検証
 			if got != tt.expectedInt {
