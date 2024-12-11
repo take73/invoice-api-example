@@ -32,12 +32,12 @@ type CreateInvoiceResponse struct {
 	ClientID         uint       `json:"clientId"`         // 請求先取引先ID
 	ClientName       string     `json:"clientName"`       // 請求先取引先名
 	IssueDate        CustomDate `json:"issueDate"`        // 発行日
-	Amount           float64    `json:"amount"`           // 請求金額
-	Fee              float64    `json:"fee"`              // 手数料
+	Amount           int        `json:"amount"`           // 請求金額
+	Fee              int        `json:"fee"`              // 手数料
 	FeeRate          float64    `json:"feeRate"`          // 手数料率
-	Tax              float64    `json:"tax"`              // 消費税
+	Tax              int        `json:"tax"`              // 消費税
 	TaxRate          float64    `json:"taxRate"`          // 消費税率
-	TotalAmount      float64    `json:"totalAmount"`      // 合計金額
+	TotalAmount      int        `json:"totalAmount"`      // 合計金額
 	DueDate          CustomDate `json:"dueDate"`          // 支払期日
 	Status           string     `json:"status"`           // ステータス
 }
