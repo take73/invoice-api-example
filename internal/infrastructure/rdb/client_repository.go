@@ -22,7 +22,7 @@ func NewClientRepository(db *gorm.DB) repository.Client {
 // GetByID retrieves a client by its ID.
 func (r *ClientRepository) GetByID(id uint) (*model.Client, error) {
 	var entity entity.Client
-	if err := r.db.Preload("Organization").Where("client_id = ?", id).First(&entity).Error; err != nil {
+	if err := r.db.Where("client_id = ?", id).First(&entity).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, commonErrors.ErrNotFound
 		}
