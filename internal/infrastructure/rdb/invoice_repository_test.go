@@ -10,10 +10,9 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-func Test_Create(t *testing.T) {
+func Test_InvoiceRepository_Create(t *testing.T) {
 	db := testutils.SetupTestDB(testutils.GetFuncName())
 	db.Logger = db.Logger.LogMode(logger.Info)
-	// testutils.ExecSQLFile(db, "testdata/test_fetch_by_id.sql")
 
 	type input struct {
 		invoice model.Invoice
