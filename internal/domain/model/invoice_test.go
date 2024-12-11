@@ -17,7 +17,7 @@ func Test_Invoice_Calculate(t *testing.T) {
 		want    model.Invoice
 	}{
 		{
-			name:    "正常ケース: 手数料4%, 消費税10%",
+			name:    "手数料4%, 消費税10%",
 			amount:  10000.0,
 			feeRate: 0.04,
 			taxRate: 0.1,
@@ -31,7 +31,7 @@ func Test_Invoice_Calculate(t *testing.T) {
 			},
 		},
 		{
-			name:    "正常ケース: 手数料3%, 消費税8%",
+			name:    "手数料3%, 消費税8%",
 			amount:  5000.0,
 			feeRate: 0.03,
 			taxRate: 0.08,
