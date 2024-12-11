@@ -58,3 +58,22 @@ func NewInvoice(org *Organization, client *Client, amount float64, issueDate, du
 		Status:       StatusPending,
 	}, nil
 }
+
+// Calculate 手数料、消費税、請求金額を計算してセットする
+func (i *Invoice) Calculate(taxRate float64) {
+	// 手数料を計算: Fee = Amount * FeeRate
+	fee := big.NewRat(0, 1).Mul(i.Amount, big.NewRat(0, 1).SetFloat64(i.FeeRate))
+	i.Fee = fee
+
+	// 消費税を計算: Tax = Fee * TaxRate
+	tax := big.NewRat(0, 1).Mul(fee, big.NewRat(0, 1).SetFloat64(taxRate))
+	i.Tax = tax
+
+	// 請求金額を計算: TotalAmount = Amount + Fee + Tax
+	totalAmount := big.NewRat(0, 1).Add(i.Amount, fee)
+	totalAmount.Add(totalAmount, tax)
+	i.TotalAmount = totalAmount
+
+	// 消費税率をセット
+	i.TaxRate = taxRate
+}
