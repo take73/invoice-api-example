@@ -1,6 +1,7 @@
 package rdb
 
 import (
+	"math/big"
 	"testing"
 	"time"
 
@@ -36,12 +37,12 @@ func Test_InvoiceRepository_Create(t *testing.T) {
 						ID: 1,
 					},
 					IssueDate:   time.Date(2018, 04, 15, 0, 0, 0, 0, time.Local),
-					Amount:      1000,
-					Fee:         100,
-					FeeRate:     0.1,
-					Tax:         100,
+					Amount:      big.NewRat(10000, 1),
+					Fee:         big.NewRat(400, 1),
+					FeeRate:     0.04,
+					Tax:         big.NewRat(1000, 1),
 					TaxRate:     0.1,
-					TotalAmount: 1200,
+					TotalAmount: big.NewRat(10440, 1),
 					DueDate:     time.Date(2018, 04, 30, 0, 0, 0, 0, time.Local),
 					Status:      model.StatusPending,
 				},
@@ -55,12 +56,12 @@ func Test_InvoiceRepository_Create(t *testing.T) {
 					ID: 1,
 				},
 				IssueDate:   time.Date(2018, 04, 15, 0, 0, 0, 0, time.Local),
-				Amount:      1000,
-				Fee:         100,
-				FeeRate:     0.1,
-				Tax:         100,
+				Amount:      big.NewRat(10000, 1),
+				Fee:         big.NewRat(400, 1),
+				FeeRate:     0.04,
+				Tax:         big.NewRat(1000, 1),
 				TaxRate:     0.1,
-				TotalAmount: 1200,
+				TotalAmount: big.NewRat(10440, 1),
 				DueDate:     time.Date(2018, 04, 30, 0, 0, 0, 0, time.Local),
 				Status:      model.StatusPending,
 			},
@@ -79,7 +80,11 @@ func Test_InvoiceRepository_Create(t *testing.T) {
 				return
 			}
 
-			if diff := cmp.Diff(got, tt.want); diff != "" {
+			opts := cmp.Options{
+				cmp.Comparer(testutils.CompareBigRat),
+			}
+
+			if diff := cmp.Diff(got, tt.want, opts); diff != "" {
 				t.Errorf("api got != want (-got +want)\n%s", diff)
 				return
 			}

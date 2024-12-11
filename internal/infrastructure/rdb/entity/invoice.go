@@ -8,12 +8,12 @@ type Invoice struct {
 	OrganizationID uint      `gorm:"column:organization_id;not null"`
 	ClientID       uint      `gorm:"column:client_id;not null"`
 	IssueDate      time.Time `gorm:"column:issue_date;not null"`
-	PaymentAmount  float64   `gorm:"column:payment_amount;not null"`
-	Fee            float64   `gorm:"column:fee"`
+	PaymentAmount  BigRat    `gorm:"column:payment_amount;not null"`
+	Fee            BigRat    `gorm:"column:fee"`
 	FeeRate        float64   `gorm:"column:fee_rate"`
-	Tax            float64   `gorm:"column:tax"`
+	Tax            BigRat    `gorm:"column:tax"`
 	TaxRate        float64   `gorm:"column:tax_rate"`
-	TotalAmount    float64   `gorm:"column:total_amount;not null"`
+	TotalAmount    BigRat    `gorm:"column:total_amount;not null"`
 	DueDate        time.Time `gorm:"column:due_date;not null"`
 	Status         string    `gorm:"column:status;type:enum('pending','processing','paid','error');default:'pending'"`
 	CreatedAt      time.Time `gorm:"column:created_at;autoCreateTime"`
