@@ -20,7 +20,8 @@ func main() {
 	invoiceRepo := rdb.NewInvoiceRepository(db)
 	clientRepo := rdb.NewClientRepository(db)
 	organizationRepo := rdb.NewOrganizationRepository(db)
-	invoiceService := application.NewInvoiceUsecase(invoiceRepo, clientRepo, organizationRepo)
+	taxRateRepo := rdb.NewTaxRateRepository(db)
+	invoiceService := application.NewInvoiceUsecase(invoiceRepo, clientRepo, organizationRepo, taxRateRepo)
 
 	e := echo.New()
 	http.RegisterRoutes(e, invoiceService)
