@@ -12,7 +12,7 @@ const (
 )
 
 type Invoice struct {
-	ID           int           // 請求書ID
+	ID           uint          // 請求書ID
 	Organization *Organization // 請求元企業
 	Client       *Client       // 請求先取引先
 	IssueDate    time.Time     // 発行日

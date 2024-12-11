@@ -18,18 +18,18 @@ func NewInvoiceHandler(service *application.InvoiceUsecase) *InvoiceHandler {
 }
 
 type CreateInvoiceRequest struct {
-	UserID    int        `json:"userId"`
-	ClientID  int        `json:"clientId"`
+	UserID    uint       `json:"userId"`
+	ClientID  uint       `json:"clientId"`
 	IssueDate CustomDate `json:"issueDate"`
 	Amount    float64    `json:"amount"`
 	DueDate   CustomDate `json:"dueDate"`
 }
 
 type CreateInvoiceResponse struct {
-	ID               int        `json:"id"`               // 請求書ID
-	OrganizationID   int        `json:"organizationId"`   // 請求元企業
+	ID               uint       `json:"id"`               // 請求書ID
+	OrganizationID   uint       `json:"organizationId"`   // 請求元企業
 	OrganizationName string     `json:"organizationName"` // 請求元企業名
-	ClientID         int        `json:"clientId"`         // 請求先取引先ID
+	ClientID         uint       `json:"clientId"`         // 請求先取引先ID
 	ClientName       string     `json:"clientName"`       // 請求先取引先名
 	IssueDate        CustomDate `json:"issueDate"`        // 発行日
 	Amount           float64    `json:"amount"`           // 請求金額

@@ -8,25 +8,32 @@ import (
 )
 
 type InvoiceUsecase struct {
-	repo repository.InvoiceRepository
+	invoiceRepo      repository.Invoice
+	clientRepo       repository.Client
+	organizationRepo repository.Organization
 }
 
-func NewInvoiceService(repo repository.InvoiceRepository) *InvoiceUsecase {
-	return &InvoiceUsecase{repo: repo}
+func NewInvoiceUsecase(
+	invoiceRepo repository.Invoice,
+	clientRepo repository.Client,
+	organizationRepo repository.Organization,
+) *InvoiceUsecase {
+	return &InvoiceUsecase{invoiceRepo: invoiceRepo, clientRepo: clientRepo, organizationRepo: organizationRepo}
 }
 
 type CreateInvoiceDto struct {
-	UserID    int
+	UserID    uint
+	ClientID  uint
 	IssueDate time.Time
 	Amount    float64
 	DueDate   time.Time
 }
 
 type CreatedInvoiceDto struct {
-	ID               int       `json:"id"`               // 請求書ID
-	OrganizationID   int       `json:"organizationId"`   // 請求元企業
+	ID               uint      `json:"id"`               // 請求書ID
+	OrganizationID   uint      `json:"organizationId"`   // 請求元企業
 	OrganizationName string    `json:"organizationName"` // 請求元企業名
-	ClientID         int       `json:"clientId"`         // 請求先取引先ID
+	ClientID         uint      `json:"clientId"`         // 請求先取引先ID
 	ClientName       string    `json:"clientName"`       // 請求先取引先名
 	IssueDate        time.Time `json:"issueDate"`        // 発行日
 	Amount           float64   `json:"amount"`           // 請求金額
@@ -39,34 +46,48 @@ type CreatedInvoiceDto struct {
 	Status           string    `json:"status"`           // ステータス
 }
 
+// CreateInvoice 請求書を作成する.
+// 現時点ではユースケース層に実装.
+// ロジックを再利用したい場合や複雑になった場合はドメインサービスを作ることを検討する.
 func (s *InvoiceUsecase) CreateInvoice(invoice CreateInvoiceDto) (*CreatedInvoiceDto, error) {
-	in := model.Invoice{
-		// Organization: invoice.,
-		IssueDate: invoice.IssueDate,
-		Amount:    invoice.Amount,
-		DueDate:   invoice.DueDate,
-	}
-
-	out, err := s.repo.Create(in)
+	organization, err := s.organizationRepo.GetByID(invoice.UserID)
 	if err != nil {
 		return nil, err
 	}
 
-	dto := &CreatedInvoiceDto{
-		ID:               out.ID,
-		OrganizationID:   out.Organization.ID,
-		OrganizationName: out.Organization.Name,
-		ClientID:         out.Client.ID,
-		ClientName:       out.Client.Name,
-		IssueDate:        out.IssueDate,
-		Amount:           out.Amount,
-		Fee:              out.Fee,
-		FeeRate:          out.FeeRate,
-		Tax:              out.Tax,
-		TaxRate:          out.TaxRate,
-		TotalAmount:      out.TotalAmount,
-		DueDate:          out.DueDate,
-		Status:           string(out.Status),
+	client, err := s.clientRepo.GetByID(invoice.ClientID)
+	if err != nil {
+		return nil, err
 	}
-	return dto, nil
+
+	newInvoice := model.Invoice{
+		Organization: organization,
+		Client:       client,
+		IssueDate:    invoice.IssueDate,
+		Amount:       invoice.Amount,
+		DueDate:      invoice.DueDate,
+		Status:       model.StatusPending,
+	}
+
+	createdInvoice, err := s.invoiceRepo.Create(newInvoice)
+	if err != nil {
+		return nil, err
+	}
+
+	return &CreatedInvoiceDto{
+		ID:               createdInvoice.ID,
+		OrganizationID:   createdInvoice.Organization.ID,
+		OrganizationName: createdInvoice.Organization.Name,
+		ClientID:         createdInvoice.Client.ID,
+		ClientName:       createdInvoice.Client.Name,
+		IssueDate:        createdInvoice.IssueDate,
+		Amount:           createdInvoice.Amount,
+		Fee:              createdInvoice.Fee,
+		FeeRate:          createdInvoice.FeeRate,
+		Tax:              createdInvoice.Tax,
+		TaxRate:          createdInvoice.TaxRate,
+		TotalAmount:      createdInvoice.TotalAmount,
+		DueDate:          createdInvoice.DueDate,
+		Status:           string(createdInvoice.Status),
+	}, nil
 }
