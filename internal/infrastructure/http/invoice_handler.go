@@ -1,6 +1,7 @@
 package http
 
 import (
+	"log"
 	"net/http"
 	"time"
 
@@ -77,6 +78,7 @@ func (h *InvoiceHandler) CreateInvoice(c echo.Context) error {
 
 	createdInvoice, err := h.usecase.CreateInvoice(invoice)
 	if err != nil {
+		log.Printf("Failed to create invoice Error: %v", err)
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "could not create invoice"})
 	}
 
