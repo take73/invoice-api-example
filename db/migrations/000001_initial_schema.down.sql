@@ -7,6 +7,8 @@ DROP TABLE IF EXISTS client_bank_account;
 DROP TABLE IF EXISTS client;
 DROP TABLE IF EXISTS user;
 DROP TABLE IF EXISTS organization;
+DROP TABLE IF EXISTS tax_rate;
 
 -- 外部キー制約を有効化
+SET FOREIGN_KEY_CHECKS = 1;
 

@@ -10,17 +10,24 @@ import (
 )
 
 func main() {
-	// 依存関係の組み立て
-	invoiceRepo := rdb.NewInvoiceRepository()
-	invoiceService := application.NewInvoiceService(invoiceRepo)
+	db, err := rdb.NewDB()
+	if err != nil {
+		log.Fatalf("failed to connect to db: %v", err)
+		return
+	}
 
-	// Echoルータの初期化
+	// 依存関係を設定、肥大化したらwire等のDIの仕組みを導入する
+	invoiceRepo := rdb.NewInvoiceRepository(db)
+	clientRepo := rdb.NewClientRepository(db)
+	organizationRepo := rdb.NewOrganizationRepository(db)
+	taxRateRepo := rdb.NewTaxRateRepository(db)
+	invoiceService := application.NewInvoiceUsecase(invoiceRepo, clientRepo, organizationRepo, taxRateRepo)
+
 	e := echo.New()
 	http.RegisterRoutes(e, invoiceService)
 
-	// サーバーの起動
-	log.Println("Starting server on :8080")
-	if err := e.Start(":8080"); err != nil {
+	log.Println("Starting server on :1323")
+	if err := e.Start(":1323"); err != nil {
 		log.Fatalf("Server failed to start: %v", err)
 	}
 }

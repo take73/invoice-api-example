@@ -58,13 +58,22 @@ CREATE TABLE invoice (
     payment_amount DECIMAL(10, 2) NOT NULL,
     fee DECIMAL(10, 2),
     fee_rate DECIMAL(5, 2),
-    consumption_tax DECIMAL(10, 2),
-    consumption_tax_rate DECIMAL(5, 2),
+    tax DECIMAL(10, 2),
+    tax_rate DECIMAL(5, 2),
     total_amount DECIMAL(10, 2) NOT NULL,
-    payment_due_date DATE NOT NULL,
-    status ENUM('未処理', '処理中', '支払い済み', 'エラー') NOT NULL DEFAULT '未処理',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    due_date DATE NOT NULL,
+    status ENUM('pending', 'processing', 'paid', 'error') NOT NULL DEFAULT 'pending',    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (organization_id) REFERENCES organization(organization_id) ON DELETE CASCADE,
     FOREIGN KEY (client_id) REFERENCES client(client_id) ON DELETE CASCADE
+);
+
+-- 消費税テーブル
+CREATE TABLE tax_rate (
+    tax_rate_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    start_date DATE NOT NULL, -- 税率の適用開始日
+    end_date DATE DEFAULT NULL, -- 税率の適用終了日（NULLなら現在も有効）
+    rate DECIMAL(5, 2) NOT NULL, -- 税率（例: 10.00 = 10%）
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
