@@ -69,6 +69,7 @@ func (h *InvoiceHandler) CreateInvoice(c echo.Context) error {
 
 	invoice := application.CreateInvoiceDto{
 		UserID:    req.UserID,
+		ClientID:  req.ClientID,
 		IssueDate: req.IssueDate.Time,
 		Amount:    req.Amount,
 		DueDate:   req.DueDate.Time,
