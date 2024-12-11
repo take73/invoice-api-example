@@ -2,6 +2,7 @@ package entity
 
 import "time"
 
+// TaxRate ORMのEntity
 type TaxRate struct {
 	ID        uint       `gorm:"primaryKey;autoIncrement;column:tax_rate_id"`
 	StartDate time.Time  `gorm:"column:start_date;not null"` // 税率の適用開始日
