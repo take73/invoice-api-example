@@ -2,6 +2,7 @@ package rdb
 
 import (
 	"github.com/take73/invoice-api-example/internal/domain/model"
+	"github.com/take73/invoice-api-example/internal/domain/repository"
 	"github.com/take73/invoice-api-example/internal/infrastructure/rdb/entity"
 	"gorm.io/gorm"
 )
@@ -10,14 +11,13 @@ type InvoiceRepository struct {
 	db *gorm.DB
 }
 
-func NewInvoiceRepository(db *gorm.DB) *InvoiceRepository {
+func NewInvoiceRepository(db *gorm.DB) repository.Invoice {
 	return &InvoiceRepository{db: db}
 }
 
 // Create は請求書をデータベースに保存
 func (r *InvoiceRepository) Create(invoice model.Invoice) (*model.Invoice, error) {
-	// ドメインモデルを永続化モデルに変換
-	entity := entity.InvoiceEntity{
+	entity := entity.Invoice{
 		OrganizationID: invoice.Organization.ID,
 		ClientID:       invoice.Client.ID,
 		IssueDate:      invoice.IssueDate,
