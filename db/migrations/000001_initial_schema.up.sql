@@ -67,3 +67,13 @@ CREATE TABLE invoice (
     FOREIGN KEY (organization_id) REFERENCES organization(organization_id) ON DELETE CASCADE,
     FOREIGN KEY (client_id) REFERENCES client(client_id) ON DELETE CASCADE
 );
+
+-- 消費税テーブル
+CREATE TABLE tax_rate (
+    tax_rate_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    start_date DATE NOT NULL, -- 税率の適用開始日
+    end_date DATE DEFAULT NULL, -- 税率の適用終了日（NULLなら現在も有効）
+    rate DECIMAL(5, 2) NOT NULL, -- 税率（例: 10.00 = 10%）
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);

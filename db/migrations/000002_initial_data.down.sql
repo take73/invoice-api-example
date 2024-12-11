@@ -6,6 +6,7 @@ TRUNCATE TABLE client_bank_account;
 TRUNCATE TABLE client;
 TRUNCATE TABLE user;
 TRUNCATE TABLE organization;
+TRUNCATE TABLE tax_rate;
 
 -- 外部キー制約を有効化
 SET FOREIGN_KEY_CHECKS = 1;
