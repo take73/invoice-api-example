@@ -25,11 +25,11 @@ func Test_TaxRateRepository_GetRateByDate(t *testing.T) {
 		wantErr error
 	}{
 		{
-			name: "1件取得",
+			name: "最新の消費税を取得",
 			input: input{
-				date: time.Date(2021, 4, 1, 0, 0, 0, 0, time.Local),
+				date: time.Now(),
 			},
-			want: 10,
+			want: 0.1,
 		},
 	}
 
