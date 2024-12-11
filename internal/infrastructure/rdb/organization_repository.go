@@ -20,7 +20,7 @@ func NewOrganizationRepository(db *gorm.DB) repository.Organization {
 }
 
 func (r *OrganizationRepository) GetByID(id uint) (*model.Organization, error) {
-	var entity entity.User
+	var entity entity.Organization
 	if err := r.db.Where("organization_id = ?", id).First(&entity).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, commonErrors.ErrNotFound
@@ -29,12 +29,12 @@ func (r *OrganizationRepository) GetByID(id uint) (*model.Organization, error) {
 	}
 
 	organization := &model.Organization{
-		ID:             entity.OrganizationID,
-		Name:           entity.Organization.Name,
-		Representative: entity.Organization.RepresentativeName,
-		PhoneNumber:    entity.Organization.PhoneNumber,
-		PostalCode:     entity.Organization.PostalCode,
-		Address:        entity.Organization.Address,
+		ID:             entity.ID,
+		Name:           entity.Name,
+		Representative: entity.RepresentativeName,
+		PhoneNumber:    entity.PhoneNumber,
+		PostalCode:     entity.PostalCode,
+		Address:        entity.Address,
 	}
 
 	return organization, nil

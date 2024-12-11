@@ -12,7 +12,7 @@ import (
 func Test_OrganizationRepository_GetByID(t *testing.T) {
 	db := testutils.SetupTestDB(testutils.GetFuncName())
 	db.Logger = db.Logger.LogMode(logger.Info)
-	testutils.ExecSQLFile(db, "testdata/test_organization_reposiroty_get_by_id.sql")
+	// testutils.ExecSQLFile(db, "testdata/test_organization_reposiroty_get_by_id.sql")
 
 	type input struct {
 		id uint
