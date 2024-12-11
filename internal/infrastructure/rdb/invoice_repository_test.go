@@ -15,7 +15,7 @@ func Test_InvoiceRepository_Create(t *testing.T) {
 	db.Logger = db.Logger.LogMode(logger.Info)
 
 	type input struct {
-		invoice model.Invoice
+		invoice *model.Invoice
 	}
 
 	tests := []struct {
@@ -28,7 +28,7 @@ func Test_InvoiceRepository_Create(t *testing.T) {
 		{
 			name: "1件登録",
 			input: input{
-				invoice: model.Invoice{
+				invoice: &model.Invoice{
 					Organization: &model.Organization{
 						ID: 1,
 					},

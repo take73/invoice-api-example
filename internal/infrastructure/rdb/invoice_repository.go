@@ -16,7 +16,7 @@ func NewInvoiceRepository(db *gorm.DB) repository.Invoice {
 }
 
 // Create は請求書をデータベースに保存
-func (r *InvoiceRepository) Create(invoice model.Invoice) (*model.Invoice, error) {
+func (r *InvoiceRepository) Create(invoice *model.Invoice) (*model.Invoice, error) {
 	entity := entity.Invoice{
 		OrganizationID: invoice.Organization.ID,
 		ClientID:       invoice.Client.ID,

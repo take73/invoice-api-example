@@ -60,14 +60,18 @@ func (s *InvoiceUsecase) CreateInvoice(invoice CreateInvoiceDto) (*CreatedInvoic
 		return nil, err
 	}
 
-	newInvoice := model.Invoice{
-		Organization: organization,
-		Client:       client,
-		IssueDate:    invoice.IssueDate,
-		Amount:       invoice.Amount,
-		DueDate:      invoice.DueDate,
-		Status:       model.StatusPending,
+	newInvoice, err := model.NewInvoice(
+		organization,
+		client,
+		invoice.Amount,
+		invoice.IssueDate,
+		invoice.DueDate,
+	)
+	if err != nil {
+		return nil, err
 	}
+
+
 
 	createdInvoice, err := s.invoiceRepo.Create(newInvoice)
 	if err != nil {
