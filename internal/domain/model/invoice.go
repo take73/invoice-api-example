@@ -1,7 +1,9 @@
 package model
 
 import (
+	"errors"
 	"fmt"
+	"math"
 	"math/big"
 	"os"
 	"strconv"
@@ -76,4 +78,34 @@ func (i *Invoice) Calculate(taxRate float64) {
 
 	// 消費税率をセット
 	i.TaxRate = taxRate
+}
+
+// truncateRatToInt 小数点以下を切り捨てて int で返す
+func truncateRatToInt(r *big.Rat) (int, error) {
+	value, ok := r.Float64()
+	if !ok {
+		return 0, errors.New("failed to convert Rat to float64")
+	}
+	truncated := math.Floor(value)
+	return int(truncated), nil
+}
+
+// AmountAsInt 小数点以下を切り捨てて intで返す
+func (i *Invoice) AmountAsInt() (int, error) {
+	return truncateRatToInt(i.Amount)
+}
+
+// TotalAmountAsInt 小数点以下を切り捨てて intで返す
+func (i *Invoice) TotalAmountAsInt() (int, error) {
+	return truncateRatToInt(i.TotalAmount)
+}
+
+// TaxAsInt 小数点以下を切り捨てて intで返す
+func (i *Invoice) TaxAsInt() (int, error) {
+	return truncateRatToInt(i.Tax)
+}
+
+// FeeAsInt 小数点以下を切り捨てて intで返す
+func (i *Invoice) FeeAsInt() (int, error) {
+	return truncateRatToInt(i.Fee)
 }

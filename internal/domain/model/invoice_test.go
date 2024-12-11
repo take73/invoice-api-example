@@ -64,3 +64,78 @@ func Test_Invoice_Calculate(t *testing.T) {
 		})
 	}
 }
+
+func Test_Invoice_TotalAmountAsInt(t *testing.T) {
+	tests := []struct {
+		name        string
+		totalAmount *big.Rat
+		expectedInt int
+		expectError bool
+	}{
+		{
+			name:        "正常値 (整数値)",
+			totalAmount: big.NewRat(10440, 1), // 10440.0
+			expectedInt: 10440,
+			expectError: false,
+		},
+		{
+			name:        "小数点以下切り捨て (10.99 -> 10)",
+			totalAmount: big.NewRat(1099, 100), // 10.99
+			expectedInt: 10,
+			expectError: false,
+		},
+		{
+			name:        "小数点以下切り捨て (10.00000001 -> 10)",
+			totalAmount: big.NewRat(1000000001, 100000000), // 10.00000001
+			expectedInt: 10,
+			expectError: false,
+		},
+		{
+			name:        "ゼロ (0.999 -> 0)",
+			totalAmount: big.NewRat(999, 1000), // 0.999
+			expectedInt: 0,
+			expectError: false,
+		},
+		{
+			name:        "負の値 (-10.99 -> -10)",
+			totalAmount: big.NewRat(-1099, 100), // -10.99
+			expectedInt: -10,
+			expectError: false,
+		},
+		{
+			name:        "非常に小さい値",
+			totalAmount: big.NewRat(1, 100000000), // 0.00000001
+			expectedInt: 0,
+			expectError: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Invoice オブジェクトを作成
+			invoice := &model.Invoice{
+				TotalAmount: tt.totalAmount,
+			}
+
+			// TotalAmountAsInt をテスト
+			got, err := invoice.TotalAmountAsInt()
+
+			// エラーの検証
+			if tt.expectError {
+				if err == nil {
+					t.Errorf("expected error but got nil")
+				}
+				return
+			}
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+				return
+			}
+
+			// 結果の検証
+			if got != tt.expectedInt {
+				t.Errorf("unexpected result: got %d, want %d", got, tt.expectedInt)
+			}
+		})
+	}
+}
