@@ -48,6 +48,7 @@ func (r *InvoiceRepository) Create(invoice *model.Invoice) (*model.Invoice, erro
 		return nil, errors.New("invalid feeRate: must be between 0.0 and 1.0")
 	}
 
+	// domain modelに変換して返す
 	return &model.Invoice{
 		ID: entity.ID,
 		Organization: &model.Organization{
