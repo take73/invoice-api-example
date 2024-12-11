@@ -19,6 +19,7 @@ func NewInvoiceHandler(service *application.InvoiceUsecase) *InvoiceHandler {
 
 type CreateInvoiceRequest struct {
 	UserID    int        `json:"userId"`
+	ClientID  int        `json:"clientId"`
 	IssueDate CustomDate `json:"issueDate"`
 	Amount    float64    `json:"amount"`
 	DueDate   CustomDate `json:"dueDate"`

@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/take73/invoice-api-example/internal/domain/adoption/model"
+	"github.com/take73/invoice-api-example/internal/domain/model"
 	"github.com/take73/invoice-api-example/internal/infrastructure/rdb/testutils"
 	"gorm.io/gorm/logger"
 )

@@ -1,7 +1,7 @@
 package rdb
 
 import (
-	"github.com/take73/invoice-api-example/internal/domain/adoption/model"
+	"github.com/take73/invoice-api-example/internal/domain/model"
 	"github.com/take73/invoice-api-example/internal/infrastructure/rdb/entity"
 	"gorm.io/gorm"
 )
