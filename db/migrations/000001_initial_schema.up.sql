@@ -65,7 +65,8 @@ CREATE TABLE invoice (
     status ENUM('pending', 'processing', 'paid', 'error') NOT NULL DEFAULT 'pending',    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (organization_id) REFERENCES organization(organization_id) ON DELETE CASCADE,
-    FOREIGN KEY (client_id) REFERENCES client(client_id) ON DELETE CASCADE
+    FOREIGN KEY (client_id) REFERENCES client(client_id) ON DELETE CASCADE,
+    INDEX idx_due_date (due_date)
 );
 
 -- 消費税テーブル

@@ -2,6 +2,7 @@ package rdb
 
 import (
 	"errors"
+	"time"
 
 	"github.com/shopspring/decimal"
 	"github.com/take73/invoice-api-example/internal/domain/model"
@@ -69,4 +70,45 @@ func (r *InvoiceRepository) Create(invoice *model.Invoice) (*model.Invoice, erro
 		DueDate:     entity.DueDate,
 		Status:      model.InvoiceStatus(entity.Status),
 	}, nil
+}
+
+func (r *InvoiceRepository) FindByDueDateRange(startDate, endDate time.Time) ([]*model.Invoice, error) {
+	var entities []entity.Invoice
+
+	err := r.db.Table("invoice").
+		Where("due_date >= ? AND due_date <= ?", startDate, endDate).
+		Order("due_date asc").
+		Find(&entities).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	// ドメインモデルに変換
+	invoices := make([]*model.Invoice, len(entities))
+	for i, e := range entities {
+		taxRate, _ := e.TaxRate.Float64()
+		feeRate, _ := e.FeeRate.Float64()
+
+		invoices[i] = &model.Invoice{
+			ID: e.ID,
+			Organization: &model.Organization{
+				ID: e.OrganizationID,
+			},
+			Client: &model.Client{
+				ID: e.ClientID,
+			},
+			IssueDate:   e.IssueDate,
+			Amount:      e.PaymentAmount,
+			Fee:         e.Fee,
+			FeeRate:     feeRate,
+			Tax:         e.Tax,
+			TaxRate:     taxRate,
+			TotalAmount: e.TotalAmount,
+			DueDate:     e.DueDate,
+			Status:      model.InvoiceStatus(e.Status),
+		}
+	}
+
+	return invoices, nil
 }
