@@ -2,3 +2,4 @@
 .envrc
 .vscode/
 tmp/**
+__debug_bin*

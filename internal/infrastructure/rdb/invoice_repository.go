@@ -51,10 +51,12 @@ func (r *InvoiceRepository) Create(invoice *model.Invoice) (*model.Invoice, erro
 	return &model.Invoice{
 		ID: entity.ID,
 		Organization: &model.Organization{
-			ID: entity.OrganizationID,
+			ID:   entity.OrganizationID,
+			Name: invoice.Organization.Name,
 		},
 		Client: &model.Client{
-			ID: entity.ClientID,
+			ID:   entity.ClientID,
+			Name: invoice.Client.Name,
 		},
 		IssueDate:   entity.IssueDate,
 		Amount:      entity.PaymentAmount,

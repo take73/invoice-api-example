@@ -73,7 +73,7 @@ func Test_Invoice_TotalAmountAsInt(t *testing.T) {
 	tests := []struct {
 		name        string
 		totalAmount decimal.Decimal
-		expectedInt int
+		expectedInt int64
 		expectError bool
 	}{
 		{

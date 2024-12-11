@@ -85,28 +85,28 @@ func (i *Invoice) Calculate(taxRate float64) {
 }
 
 // truncateDecimalToInt 小数点以下を切り捨てて int で返す
-func truncateDecimalToInt(d decimal.Decimal) int {
+func truncateDecimalToInt(d decimal.Decimal) int64 {
 	// 小数点以下を切り捨てる
 	truncated := d.Truncate(0)
-	return int(truncated.IntPart())
+	return int64(truncated.IntPart())
 }
 
 // AmountAsInt 小数点以下を切り捨てて int で返す
-func (i *Invoice) AmountAsInt() int {
+func (i *Invoice) AmountAsInt() int64 {
 	return truncateDecimalToInt(i.Amount)
 }
 
 // TotalAmountAsInt 小数点以下を切り捨てて int で返す
-func (i *Invoice) TotalAmountAsInt() int {
+func (i *Invoice) TotalAmountAsInt() int64 {
 	return truncateDecimalToInt(i.TotalAmount)
 }
 
 // TaxAsInt 小数点以下を切り捨てて int で返す
-func (i *Invoice) TaxAsInt() int {
+func (i *Invoice) TaxAsInt() int64 {
 	return truncateDecimalToInt(i.Tax)
 }
 
 // FeeAsInt 小数点以下を切り捨てて int で返す
-func (i *Invoice) FeeAsInt() int {
+func (i *Invoice) FeeAsInt() int64 {
 	return truncateDecimalToInt(i.Fee)
 }

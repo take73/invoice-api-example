@@ -1,12 +1,13 @@
 ### VSCodeの REST Clientを使っての動作確認用
 
-### 検索
-POST http://localhost:8080/invoice
+### 請求書登録
+POST http://localhost:1323/invoice
 Content-Type: application/json
 
 {
-    "invoiceNumber": "INV-1001",
-    "customerName": "John Doe",
-    "amount": 500.00,
+    "userId": 1,
+    "clientId": 1,
+    "issueDate": "2024-12-10",
+    "amount": 40000,
     "dueDate": "2024-12-31"
 }

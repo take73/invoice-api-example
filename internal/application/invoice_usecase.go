@@ -32,7 +32,7 @@ type CreateInvoiceDto struct {
 	UserID    uint
 	ClientID  uint
 	IssueDate time.Time
-	Amount    float64
+	Amount    int64
 	DueDate   time.Time
 }
 
@@ -43,12 +43,12 @@ type CreatedInvoiceDto struct {
 	ClientID         uint      `json:"clientId"`         // 請求先取引先ID
 	ClientName       string    `json:"clientName"`       // 請求先取引先名
 	IssueDate        time.Time `json:"issueDate"`        // 発行日
-	Amount           int       `json:"amount"`           // 請求金額
-	Fee              int       `json:"fee"`              // 手数料
+	Amount           int64     `json:"amount"`           // 請求金額
+	Fee              int64     `json:"fee"`              // 手数料
 	FeeRate          float64   `json:"feeRate"`          // 手数料率
-	Tax              int       `json:"tax"`              // 消費税
+	Tax              int64     `json:"tax"`              // 消費税
 	TaxRate          float64   `json:"taxRate"`          // 消費税率
-	TotalAmount      int       `json:"totalAmount"`      // 合計金額
+	TotalAmount      int64     `json:"totalAmount"`      // 合計金額
 	DueDate          time.Time `json:"dueDate"`          // 支払期日
 	Status           string    `json:"status"`           // ステータス
 }
@@ -103,24 +103,6 @@ func (s *InvoiceUsecase) CreateInvoice(invoice CreateInvoiceDto) (*CreatedInvoic
 }
 
 func (s *InvoiceUsecase) invoiceToDto(invoice *model.Invoice) (*CreatedInvoiceDto, error) {
-	amount, err := invoice.AmountAsInt()
-	if err != nil {
-		return nil, err
-	}
-	fee, err := invoice.FeeAsInt()
-	if err != nil {
-		return nil, err
-	}
-	tax, err := invoice.TaxAsInt()
-	if err != nil {
-		return nil, err
-	}
-
-	totalAmount, err := invoice.TotalAmountAsInt()
-	if err != nil {
-		return nil, err
-	}
-
 	return &CreatedInvoiceDto{
 		ID:               invoice.ID,
 		OrganizationID:   invoice.Organization.ID,
@@ -128,12 +110,12 @@ func (s *InvoiceUsecase) invoiceToDto(invoice *model.Invoice) (*CreatedInvoiceDt
 		ClientID:         invoice.Client.ID,
 		ClientName:       invoice.Client.Name,
 		IssueDate:        invoice.IssueDate,
-		Amount:           amount,
-		Fee:              fee,
+		Amount:           invoice.AmountAsInt(),
+		Fee:              invoice.FeeAsInt(),
 		FeeRate:          invoice.FeeRate,
-		Tax:              tax,
+		Tax:              invoice.TaxAsInt(),
 		TaxRate:          invoice.TaxRate,
-		TotalAmount:      totalAmount,
+		TotalAmount:      invoice.TotalAmountAsInt(),
 		DueDate:          invoice.DueDate,
 		Status:           string(invoice.Status),
 	}, nil

@@ -22,7 +22,7 @@ type CreateInvoiceRequest struct {
 	UserID    uint       `json:"userId"`
 	ClientID  uint       `json:"clientId"`
 	IssueDate CustomDate `json:"issueDate"`
-	Amount    float64    `json:"amount"`
+	Amount    int64      `json:"amount"`
 	DueDate   CustomDate `json:"dueDate"`
 }
 
@@ -33,12 +33,12 @@ type CreateInvoiceResponse struct {
 	ClientID         uint       `json:"clientId"`         // 請求先取引先ID
 	ClientName       string     `json:"clientName"`       // 請求先取引先名
 	IssueDate        CustomDate `json:"issueDate"`        // 発行日
-	Amount           int        `json:"amount"`           // 請求金額
-	Fee              int        `json:"fee"`              // 手数料
+	Amount           int64      `json:"amount"`           // 請求金額
+	Fee              int64      `json:"fee"`              // 手数料
 	FeeRate          float64    `json:"feeRate"`          // 手数料率
-	Tax              int        `json:"tax"`              // 消費税
+	Tax              int64      `json:"tax"`              // 消費税
 	TaxRate          float64    `json:"taxRate"`          // 消費税率
-	TotalAmount      int        `json:"totalAmount"`      // 合計金額
+	TotalAmount      int64      `json:"totalAmount"`      // 合計金額
 	DueDate          CustomDate `json:"dueDate"`          // 支払期日
 	Status           string     `json:"status"`           // ステータス
 }
@@ -65,6 +65,7 @@ func (d CustomDate) MarshalJSON() ([]byte, error) {
 func (h *InvoiceHandler) CreateInvoice(c echo.Context) error {
 	var req CreateInvoiceRequest
 	if err := c.Bind(&req); err != nil {
+		log.Printf("Failed to bind request Error: %v", err)
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request"})
 	}
 
