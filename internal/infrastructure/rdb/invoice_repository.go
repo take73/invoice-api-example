@@ -1,9 +1,13 @@
 package rdb
 
 import (
+	"errors"
+
+	"github.com/shopspring/decimal"
 	"github.com/take73/invoice-api-example/internal/domain/model"
 	"github.com/take73/invoice-api-example/internal/domain/repository"
 	"github.com/take73/invoice-api-example/internal/infrastructure/rdb/entity"
+	"github.com/take73/invoice-api-example/internal/shared/validation"
 	"gorm.io/gorm"
 )
 
@@ -21,18 +25,27 @@ func (r *InvoiceRepository) Create(invoice *model.Invoice) (*model.Invoice, erro
 		OrganizationID: invoice.Organization.ID,
 		ClientID:       invoice.Client.ID,
 		IssueDate:      invoice.IssueDate,
-		PaymentAmount:  entity.BigRat{Rat: invoice.Amount},
-		Fee:            entity.BigRat{Rat: invoice.Fee},
-		FeeRate:        invoice.FeeRate,
-		Tax:            entity.BigRat{Rat: invoice.Tax},
-		TaxRate:        invoice.TaxRate,
-		TotalAmount:    entity.BigRat{Rat: invoice.TotalAmount},
+		PaymentAmount:  invoice.Amount,
+		Fee:            invoice.Fee,
+		FeeRate:        decimal.NewFromFloat(invoice.FeeRate),
+		Tax:            invoice.Tax,
+		TaxRate:        decimal.NewFromFloat(invoice.TaxRate),
+		TotalAmount:    invoice.TotalAmount,
 		DueDate:        invoice.DueDate,
 		Status:         string(invoice.Status),
 	}
 
 	if err := r.db.Table("invoice").Create(&entity).Error; err != nil {
 		return nil, err
+	}
+
+	taxRate, _ := entity.TaxRate.Float64()
+	if validation.ValidRate(taxRate) {
+		return nil, errors.New("failed to convert taxRate to float64")
+	}
+	feeRate, _ := entity.FeeRate.Float64()
+	if validation.ValidRate(feeRate) {
+		return nil, errors.New("failed to convert feeRate to float64")
 	}
 
 	return &model.Invoice{
@@ -44,12 +57,12 @@ func (r *InvoiceRepository) Create(invoice *model.Invoice) (*model.Invoice, erro
 			ID: entity.ClientID,
 		},
 		IssueDate:   entity.IssueDate,
-		Amount:      entity.PaymentAmount.Rat,
-		Fee:         entity.Fee.Rat,
-		FeeRate:     entity.FeeRate,
-		Tax:         entity.Tax.Rat,
-		TaxRate:     entity.TaxRate,
-		TotalAmount: entity.TotalAmount.Rat,
+		Amount:      entity.PaymentAmount,
+		Fee:         entity.Fee,
+		FeeRate:     feeRate,
+		Tax:         entity.Tax,
+		TaxRate:     taxRate,
+		TotalAmount: entity.TotalAmount,
 		DueDate:     entity.DueDate,
 		Status:      model.InvoiceStatus(entity.Status),
 	}, nil

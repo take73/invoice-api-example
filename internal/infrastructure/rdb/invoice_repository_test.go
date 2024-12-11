@@ -1,11 +1,11 @@
 package rdb
 
 import (
-	"math/big"
 	"testing"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/shopspring/decimal"
 	"github.com/take73/invoice-api-example/internal/domain/model"
 	"github.com/take73/invoice-api-example/internal/infrastructure/rdb/testutils"
 	"gorm.io/gorm/logger"
@@ -37,12 +37,12 @@ func Test_InvoiceRepository_Create(t *testing.T) {
 						ID: 1,
 					},
 					IssueDate:   time.Date(2018, 04, 15, 0, 0, 0, 0, time.Local),
-					Amount:      big.NewRat(10000, 1),
-					Fee:         big.NewRat(400, 1),
+					Amount:      decimal.NewFromInt(10000),
+					Fee:         decimal.NewFromInt(400),
 					FeeRate:     0.04,
-					Tax:         big.NewRat(1000, 1),
+					Tax:         decimal.NewFromInt(40),
 					TaxRate:     0.1,
-					TotalAmount: big.NewRat(10440, 1),
+					TotalAmount: decimal.NewFromInt(10440),
 					DueDate:     time.Date(2018, 04, 30, 0, 0, 0, 0, time.Local),
 					Status:      model.StatusPending,
 				},
@@ -56,12 +56,12 @@ func Test_InvoiceRepository_Create(t *testing.T) {
 					ID: 1,
 				},
 				IssueDate:   time.Date(2018, 04, 15, 0, 0, 0, 0, time.Local),
-				Amount:      big.NewRat(10000, 1),
-				Fee:         big.NewRat(400, 1),
+				Amount:      decimal.NewFromInt(10000),
+				Fee:         decimal.NewFromInt(400),
 				FeeRate:     0.04,
-				Tax:         big.NewRat(1000, 1),
+				Tax:         decimal.NewFromInt(40),
 				TaxRate:     0.1,
-				TotalAmount: big.NewRat(10440, 1),
+				TotalAmount: decimal.NewFromInt(10440),
 				DueDate:     time.Date(2018, 04, 30, 0, 0, 0, 0, time.Local),
 				Status:      model.StatusPending,
 			},
