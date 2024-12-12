@@ -37,7 +37,7 @@ func Test_InvoiceHandler_CreateInvoice(t *testing.T) {
 					IssueDate: time.Date(2023, 12, 1, 0, 0, 0, 0, time.UTC),
 					Amount:    10000,
 					DueDate:   time.Date(2023, 12, 15, 0, 0, 0, 0, time.UTC),
-				}).Return(&application.CreatedInvoiceDto{
+				}).Return(&application.InvoiceDto{
 					ID:               1,
 					OrganizationID:   1,
 					OrganizationName: "Test Organization",
@@ -187,7 +187,7 @@ func Test_InvoiceHandler_CreateInvoice(t *testing.T) {
 					IssueDate: time.Date(2023, 12, 1, 0, 0, 0, 0, time.UTC),
 					Amount:    0,
 					DueDate:   time.Date(2023, 12, 15, 0, 0, 0, 0, time.UTC),
-				}).Return(&application.CreatedInvoiceDto{
+				}).Return(&application.InvoiceDto{
 					ID:               1,
 					OrganizationID:   1,
 					OrganizationName: "Test Organization",
@@ -328,6 +328,127 @@ func Test_InvoiceHandler_CreateInvoice(t *testing.T) {
 
 			// ハンドラの実行
 			err := handler.CreateInvoice(c)
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expectedStatus, rec.Code)
+
+			// レスポンスの検証
+			if tt.expectedBody != nil {
+				tt.expectedBody(t, rec)
+			}
+
+			// モックのアサーション
+			mockUsecase.AssertExpectations(t)
+		})
+	}
+}
+
+func Test_InvoiceHandler_ListInvoice(t *testing.T) {
+	e := echo.New()
+	e.Validator = validation.NewCustomValidator()
+
+	tests := []struct {
+		name           string
+		setupMock      func(*testutils.MockInvoiceUsecase)
+		queryParams    string
+		expectedStatus int
+		expectedBody   func(*testing.T, *httptest.ResponseRecorder)
+	}{
+		{
+			name: "success",
+			setupMock: func(mockUsecase *testutils.MockInvoiceUsecase) {
+				mockUsecase.On("ListInvoice", application.ListInvoiceDto{
+					StartDate: time.Date(2023, 12, 1, 0, 0, 0, 0, time.UTC),
+					EndDate:   time.Date(2023, 12, 31, 0, 0, 0, 0, time.UTC),
+				}).Return([]*application.InvoiceDto{
+					{
+						ID:               1,
+						OrganizationID:   1,
+						OrganizationName: "Test Organization",
+						ClientID:         1,
+						ClientName:       "Test Client",
+						IssueDate:        time.Date(2023, 12, 1, 0, 0, 0, 0, time.UTC),
+						Amount:           10000,
+						Fee:              400,
+						FeeRate:          0.04,
+						Tax:              40,
+						TaxRate:          0.1,
+						TotalAmount:      10440,
+						DueDate:          time.Date(2023, 12, 15, 0, 0, 0, 0, time.UTC),
+						Status:           "pending",
+					},
+				}, nil)
+			},
+			queryParams:    "?startDate=2023-12-01&endDate=2023-12-31",
+			expectedStatus: http.StatusOK,
+			expectedBody: func(t *testing.T, rec *httptest.ResponseRecorder) {
+				var response ListInvoiceResponse
+				err := json.Unmarshal(rec.Body.Bytes(), &response)
+				assert.NoError(t, err)
+				assert.Len(t, response.Invoices, 1)
+				assert.Equal(t, uint(1), response.Invoices[0].ID)
+				assert.Equal(t, "Test Organization", response.Invoices[0].OrganizationName)
+				assert.Equal(t, "Test Client", response.Invoices[0].ClientName)
+			},
+		},
+		{
+			name:           "startDateのformatが不正の場合, invalid request",
+			setupMock:      func(mockUsecase *testutils.MockInvoiceUsecase) {},
+			queryParams:    "?startDate=2023/12/01&endDate=2023-12-31",
+			expectedStatus: http.StatusBadRequest,
+			expectedBody: func(t *testing.T, rec *httptest.ResponseRecorder) {
+				var response map[string]string
+				err := json.Unmarshal(rec.Body.Bytes(), &response)
+				assert.NoError(t, err)
+				assert.Equal(t, "invalid request", response["error"])
+			},
+		},
+		{
+			name:           "endDateのformatが不正の場合, invalid request",
+			setupMock:      func(mockUsecase *testutils.MockInvoiceUsecase) {},
+			queryParams:    "?startDate=2023-12-01&endDate=2023/12/31",
+			expectedStatus: http.StatusBadRequest,
+			expectedBody: func(t *testing.T, rec *httptest.ResponseRecorder) {
+				var response map[string]string
+				err := json.Unmarshal(rec.Body.Bytes(), &response)
+				assert.NoError(t, err)
+				assert.Equal(t, "invalid request", response["error"])
+			},
+		},
+		{
+			name: "ListInvoiceでエラーが発生した場合, could not list invoices",
+			setupMock: func(mockUsecase *testutils.MockInvoiceUsecase) {
+				mockUsecase.On("ListInvoice", application.ListInvoiceDto{
+					StartDate: time.Date(2023, 12, 1, 0, 0, 0, 0, time.UTC),
+					EndDate:   time.Date(2023, 12, 31, 0, 0, 0, 0, time.UTC),
+				}).Return([]*application.InvoiceDto{}, errors.New("unexpected error"))
+			},
+			queryParams:    "?startDate=2023-12-01&endDate=2023-12-31",
+			expectedStatus: http.StatusInternalServerError,
+			expectedBody: func(t *testing.T, rec *httptest.ResponseRecorder) {
+				var response map[string]string
+				err := json.Unmarshal(rec.Body.Bytes(), &response)
+				assert.NoError(t, err)
+				assert.Equal(t, "could not list invoices", response["error"])
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// 新しいモックインスタンスを作成
+			mockUsecase := &testutils.MockInvoiceUsecase{}
+			tt.setupMock(mockUsecase)
+
+			// ハンドラを新規作成
+			handler := NewInvoiceHandler(mockUsecase)
+
+			// リクエストのセットアップ
+			req := httptest.NewRequest(http.MethodGet, "/invoices"+tt.queryParams, nil)
+			rec := httptest.NewRecorder()
+			c := e.NewContext(req, rec)
+
+			// ハンドラの実行
+			err := handler.ListInvoice(c)
 			assert.NoError(t, err)
 			assert.Equal(t, tt.expectedStatus, rec.Code)
 
