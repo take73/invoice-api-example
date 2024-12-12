@@ -8,19 +8,19 @@ lint:
 
 .PHONY: go run
 run-local:
-	go run cmd/server/main.go
+	@set -a && source .env && go run cmd/server/main.go
 
 .PHONY: migrate up
 migrate-up:
-	migrate -database "${DB_CONNECT_STRING_TEST}" -path db/migrations up
+	@set -a && source .env && migrate -database "$${DB_CONNECT_STRING_TEST}" -path db/migrations up
 
 .PHONY: migrate down
 migrate-down:
-	migrate -database "${DB_CONNECT_STRING_TEST}" -path db/migrations down 1
+	@set -a && source .env && migrate -database "$${DB_CONNECT_STRING_TEST}" -path db/migrations down 1
 
 .PHONY: test
 test:
-	go test -v -race $(GO_PACKAGES)
+	@set -a && source .env && go test -v -race $(GO_PACKAGES)
 
 .PHONY: export
 export:
