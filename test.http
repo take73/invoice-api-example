@@ -14,5 +14,5 @@ Content-Type: application/json
 
 
 ### 請求書取得
-GET http://localhost:1323/invoice?startDate=1730386800&endDate=1735657200&timeZone=Asia/Tokyo
+GET http://localhost:1323/invoice?startDate=2024-10-31&endDate=2024-12-31
 Content-Type: application/json
