@@ -163,6 +163,23 @@ func Test_InvoiceHandler_CreateInvoice(t *testing.T) {
 			},
 		},
 		{
+			name:      "issueDateがない場合, validation failed",
+			setupMock: func() {}, // Mock is not called in this case
+			payload: map[string]interface{}{
+				"userId":   1,
+				"clientId": 1,
+				"amount":   10000,
+				"dueDate":  "2023-12-15",
+			},
+			expectedStatus: http.StatusBadRequest,
+			expectedBody: func(t *testing.T, rec *httptest.ResponseRecorder) {
+				var response map[string]string
+				err := json.Unmarshal(rec.Body.Bytes(), &response)
+				assert.NoError(t, err)
+				assert.Equal(t, "validation failed", response["error"])
+			},
+		},
+		{
 			name: "amountが0の場合, success",
 			setupMock: func() {
 				mockUsecase.On("CreateInvoice", application.CreateInvoiceDto{
@@ -221,6 +238,23 @@ func Test_InvoiceHandler_CreateInvoice(t *testing.T) {
 				err := json.Unmarshal(rec.Body.Bytes(), &response)
 				assert.NoError(t, err)
 				assert.Equal(t, "invalid request", response["error"])
+			},
+		},
+		{
+			name:      "dueDateがない場合, validation failed",
+			setupMock: func() {}, // Mock is not called in this case
+			payload: map[string]interface{}{
+				"userId":    1,
+				"clientId":  1,
+				"issueDate": "2023-12-01",
+				"amount":    10000,
+			},
+			expectedStatus: http.StatusBadRequest,
+			expectedBody: func(t *testing.T, rec *httptest.ResponseRecorder) {
+				var response map[string]string
+				err := json.Unmarshal(rec.Body.Bytes(), &response)
+				assert.NoError(t, err)
+				assert.Equal(t, "validation failed", response["error"])
 			},
 		},
 	}

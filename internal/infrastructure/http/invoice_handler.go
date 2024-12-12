@@ -19,11 +19,11 @@ func NewInvoiceHandler(usecase application.InvoiceUsecase) *InvoiceHandler {
 }
 
 type CreateInvoiceRequest struct {
-	UserID    uint             `json:"userId" validate:"required,gt=0"`   // 必須, 0より大きい
-	ClientID  uint             `json:"clientId" validate:"required,gt=0"` // 必須, 0より大きい
-	IssueDate types.CustomDate `json:"issueDate" validate:"required"`     // 必須, 有効な日付
-	Amount    int64            `json:"amount"`                            // 0やマイナスを許容しないなら必須としてもよさそう
-	DueDate   types.CustomDate `json:"dueDate" validate:"required"`       // 必須, 有効な日付
+	UserID    uint             `json:"userId" validate:"required,gt=0"`           // 必須, 0より大きい
+	ClientID  uint             `json:"clientId" validate:"required,gt=0"`         // 必須, 0より大きい
+	IssueDate types.CustomDate `json:"issueDate" validate:"required_custom_date"` // 必須
+	Amount    int64            `json:"amount"`                                    // 0やマイナスを許容しないなら必須としてもよさそう
+	DueDate   types.CustomDate `json:"dueDate" validate:"required_custom_date"`   // 必須
 }
 
 type CreateInvoiceResponse struct {
