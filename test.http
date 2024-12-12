@@ -11,3 +11,8 @@ Content-Type: application/json
     "amount": 40000,
     "dueDate": "2024-12-31"
 }
+
+
+### 請求書取得
+GET http://localhost:1323/invoice?startDate=2024-10-31&endDate=2024-12-31
+Content-Type: application/json

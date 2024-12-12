@@ -6,10 +6,6 @@ lint:
 	@go vet $(GO_PACKAGES)
 	@staticcheck $(GO_PACKAGES)
 
-.PHONY: wire
-wire:
-	cd cmd/server && wire
-
 .PHONY: go run
 run-local:
 	go run cmd/server/main.go
@@ -25,3 +21,7 @@ migrate-down:
 .PHONY: test
 test:
 	go test -v -race $(GO_PACKAGES)
+
+.PHONY: export
+export:
+	cd tmp/gpt-repository-loader && python gpt_repository_loader.py ../../internal -o example.txt

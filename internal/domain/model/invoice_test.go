@@ -7,7 +7,6 @@ import (
 	"github.com/shopspring/decimal"
 	"github.com/take73/invoice-api-example/internal/domain/model"
 )
-
 func Test_Invoice_Calculate(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -17,8 +16,8 @@ func Test_Invoice_Calculate(t *testing.T) {
 		want    model.Invoice
 	}{
 		{
-			name:    "手数料4%, 消費税10%",
-			amount:  10000.0,
+			name:    "正常ケース: 手数料4%, 消費税10%",
+			amount:  10000,
 			feeRate: 0.04,
 			taxRate: 0.1,
 			want: model.Invoice{
@@ -31,17 +30,59 @@ func Test_Invoice_Calculate(t *testing.T) {
 			},
 		},
 		{
-			name:    "手数料3%, 消費税8%",
-			amount:  5000.0,
-			feeRate: 0.03,
-			taxRate: 0.08,
+			name:    "非常に大きな金額: 手数料4%, 消費税10%",
+			amount:  1_000_000_000_000, // 1兆円
+			feeRate: 0.04,
+			taxRate: 0.1,
+			want: model.Invoice{
+				Amount:      decimal.NewFromInt(1_000_000_000_000),
+				FeeRate:     0.04,
+				Fee:         decimal.NewFromInt(40_000_000_000),
+				Tax:         decimal.NewFromInt(4_000_000_000),
+				TaxRate:     0.1,
+				TotalAmount: decimal.NewFromInt(1_044_000_000_000),
+			},
+		},
+		{
+			name:    "手数料率が0: 消費税10%",
+			amount:  5000,
+			feeRate: 0.0, // 手数料率0
+			taxRate: 0.1,
 			want: model.Invoice{
 				Amount:      decimal.NewFromInt(5000),
-				FeeRate:     0.03,
-				Fee:         decimal.NewFromInt(150),
-				TaxRate:     0.08,
-				Tax:         decimal.NewFromInt(12),
-				TotalAmount: decimal.NewFromInt(5162),
+				FeeRate:     0.0,
+				Fee:         decimal.NewFromInt(0),
+				Tax:         decimal.NewFromInt(0),
+				TaxRate:     0.1,
+				TotalAmount: decimal.NewFromInt(5000),
+			},
+		},
+		{
+			name:    "消費税率が0: 手数料4%",
+			amount:  5000,
+			feeRate: 0.04,
+			taxRate: 0.0, // 消費税率0
+			want: model.Invoice{
+				Amount:      decimal.NewFromInt(5000),
+				FeeRate:     0.04,
+				Fee:         decimal.NewFromInt(200),
+				Tax:         decimal.NewFromInt(0),
+				TaxRate:     0.0,
+				TotalAmount: decimal.NewFromInt(5200),
+			},
+		},
+		{
+			name:    "手数料率と消費税率がともに0",
+			amount:  10000,
+			feeRate: 0.0, // 手数料率0
+			taxRate: 0.0, // 消費税率0
+			want: model.Invoice{
+				Amount:      decimal.NewFromInt(10000),
+				FeeRate:     0.0,
+				Fee:         decimal.NewFromInt(0),
+				Tax:         decimal.NewFromInt(0),
+				TaxRate:     0.0,
+				TotalAmount: decimal.NewFromInt(10000),
 			},
 		},
 	}
