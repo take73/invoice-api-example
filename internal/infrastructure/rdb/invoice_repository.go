@@ -41,11 +41,11 @@ func (r *InvoiceRepository) Create(invoice *model.Invoice) (*model.Invoice, erro
 	}
 
 	taxRate, _ := entity.TaxRate.Float64()
-	if validation.ValidRate(taxRate) {
+	if !validation.ValidRate(taxRate) {
 		return nil, errors.New("invalid taxRate: must be between 0.0 and 1.0")
 	}
 	feeRate, _ := entity.FeeRate.Float64()
-	if validation.ValidRate(feeRate) {
+	if !validation.ValidRate(feeRate) {
 		return nil, errors.New("invalid feeRate: must be between 0.0 and 1.0")
 	}
 
