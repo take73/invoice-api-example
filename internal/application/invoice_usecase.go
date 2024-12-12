@@ -37,20 +37,20 @@ type CreateInvoiceDto struct {
 }
 
 type CreatedInvoiceDto struct {
-	ID               uint      `json:"id"`               // 請求書ID
-	OrganizationID   uint      `json:"organizationId"`   // 請求元企業
-	OrganizationName string    `json:"organizationName"` // 請求元企業名
-	ClientID         uint      `json:"clientId"`         // 請求先取引先ID
-	ClientName       string    `json:"clientName"`       // 請求先取引先名
-	IssueDate        time.Time `json:"issueDate"`        // 発行日
-	Amount           int64     `json:"amount"`           // 請求金額
-	Fee              int64     `json:"fee"`              // 手数料
-	FeeRate          float64   `json:"feeRate"`          // 手数料率
-	Tax              int64     `json:"tax"`              // 消費税
-	TaxRate          float64   `json:"taxRate"`          // 消費税率
-	TotalAmount      int64     `json:"totalAmount"`      // 合計金額
-	DueDate          time.Time `json:"dueDate"`          // 支払期日
-	Status           string    `json:"status"`           // ステータス
+	ID               uint
+	OrganizationID   uint
+	OrganizationName string
+	ClientID         uint
+	ClientName       string
+	IssueDate        time.Time
+	Amount           int64
+	Fee              int64
+	FeeRate          float64
+	Tax              int64
+	TaxRate          float64
+	TotalAmount      int64
+	DueDate          time.Time
+	Status           string
 }
 
 // CreateInvoice 請求書を作成する.
@@ -119,4 +119,29 @@ func (s *InvoiceUsecase) invoiceToDto(invoice *model.Invoice) (*CreatedInvoiceDt
 		DueDate:          invoice.DueDate,
 		Status:           string(invoice.Status),
 	}, nil
+}
+
+type ListInvoiceDto struct {
+	StartDate time.Time
+	EndDate   time.Time
+}
+
+func (s *InvoiceUsecase) ListInvoice(dto ListInvoiceDto) ([]*CreatedInvoiceDto, error) {
+	// 指定された日付範囲内の請求書を取得
+	invoices, err := s.invoiceRepo.FindByDueDateRange(dto.StartDate, dto.EndDate)
+	if err != nil {
+		return nil, err
+	}
+
+	// DTOリストに変換
+	result := make([]*CreatedInvoiceDto, len(invoices))
+	for i, invoice := range invoices {
+		dto, err := s.invoiceToDto(invoice)
+		if err != nil {
+			return nil, err
+		}
+		result[i] = dto
+	}
+
+	return result, nil
 }
