@@ -8,8 +8,8 @@ import (
 )
 
 type InvoiceUsecase interface {
-	CreateInvoice(dto CreateInvoiceDto) (*CreatedInvoiceDto, error)
-	ListInvoice(dto ListInvoiceDto) ([]*CreatedInvoiceDto, error)
+	CreateInvoice(dto CreateInvoiceDto) (*InvoiceDto, error)
+	ListInvoice(dto ListInvoiceDto) ([]*InvoiceDto, error)
 }
 type invoiceUsecase struct {
 	invoiceRepo      repository.Invoice
@@ -40,7 +40,7 @@ type CreateInvoiceDto struct {
 	DueDate   time.Time
 }
 
-type CreatedInvoiceDto struct {
+type InvoiceDto struct {
 	ID               uint
 	OrganizationID   uint
 	OrganizationName string
@@ -60,7 +60,7 @@ type CreatedInvoiceDto struct {
 // CreateInvoice 請求書を作成する.
 // 現時点ではユースケース層に実装.
 // ロジックを再利用したい場合や複雑になった場合はドメインサービスを作ることを検討する.
-func (s *invoiceUsecase) CreateInvoice(invoice CreateInvoiceDto) (*CreatedInvoiceDto, error) {
+func (s *invoiceUsecase) CreateInvoice(invoice CreateInvoiceDto) (*InvoiceDto, error) {
 	// 会社を取得
 	organization, err := s.organizationRepo.GetByID(invoice.UserID)
 	if err != nil {
@@ -106,8 +106,8 @@ func (s *invoiceUsecase) CreateInvoice(invoice CreateInvoiceDto) (*CreatedInvoic
 	return dto, nil
 }
 
-func (s *invoiceUsecase) invoiceToDto(invoice *model.Invoice) (*CreatedInvoiceDto, error) {
-	return &CreatedInvoiceDto{
+func (s *invoiceUsecase) invoiceToDto(invoice *model.Invoice) (*InvoiceDto, error) {
+	return &InvoiceDto{
 		ID:               invoice.ID,
 		OrganizationID:   invoice.Organization.ID,
 		OrganizationName: invoice.Organization.Name,
@@ -130,7 +130,7 @@ type ListInvoiceDto struct {
 	EndDate   time.Time
 }
 
-func (s *invoiceUsecase) ListInvoice(dto ListInvoiceDto) ([]*CreatedInvoiceDto, error) {
+func (s *invoiceUsecase) ListInvoice(dto ListInvoiceDto) ([]*InvoiceDto, error) {
 	// 指定された日付範囲内の請求書を取得
 	invoices, err := s.invoiceRepo.FindByDueDateRange(dto.StartDate, dto.EndDate)
 	if err != nil {
@@ -138,7 +138,7 @@ func (s *invoiceUsecase) ListInvoice(dto ListInvoiceDto) ([]*CreatedInvoiceDto, 
 	}
 
 	// DTOリストに変換
-	result := make([]*CreatedInvoiceDto, len(invoices))
+	result := make([]*InvoiceDto, len(invoices))
 	for i, invoice := range invoices {
 		dto, err := s.invoiceToDto(invoice)
 		if err != nil {
