@@ -7,7 +7,11 @@ import (
 	"github.com/take73/invoice-api-example/internal/domain/repository"
 )
 
-type InvoiceUsecase struct {
+type InvoiceUsecase interface {
+	CreateInvoice(dto CreateInvoiceDto) (*CreatedInvoiceDto, error)
+	ListInvoice(dto ListInvoiceDto) ([]*CreatedInvoiceDto, error)
+}
+type invoiceUsecase struct {
 	invoiceRepo      repository.Invoice
 	clientRepo       repository.Client
 	organizationRepo repository.Organization
@@ -19,8 +23,8 @@ func NewInvoiceUsecase(
 	clientRepo repository.Client,
 	organizationRepo repository.Organization,
 	taxRateRepo repository.TaxRate,
-) *InvoiceUsecase {
-	return &InvoiceUsecase{
+) InvoiceUsecase {
+	return &invoiceUsecase{
 		invoiceRepo:      invoiceRepo,
 		clientRepo:       clientRepo,
 		organizationRepo: organizationRepo,
@@ -56,7 +60,7 @@ type CreatedInvoiceDto struct {
 // CreateInvoice 請求書を作成する.
 // 現時点ではユースケース層に実装.
 // ロジックを再利用したい場合や複雑になった場合はドメインサービスを作ることを検討する.
-func (s *InvoiceUsecase) CreateInvoice(invoice CreateInvoiceDto) (*CreatedInvoiceDto, error) {
+func (s *invoiceUsecase) CreateInvoice(invoice CreateInvoiceDto) (*CreatedInvoiceDto, error) {
 	// 会社を取得
 	organization, err := s.organizationRepo.GetByID(invoice.UserID)
 	if err != nil {
@@ -102,7 +106,7 @@ func (s *InvoiceUsecase) CreateInvoice(invoice CreateInvoiceDto) (*CreatedInvoic
 	return dto, nil
 }
 
-func (s *InvoiceUsecase) invoiceToDto(invoice *model.Invoice) (*CreatedInvoiceDto, error) {
+func (s *invoiceUsecase) invoiceToDto(invoice *model.Invoice) (*CreatedInvoiceDto, error) {
 	return &CreatedInvoiceDto{
 		ID:               invoice.ID,
 		OrganizationID:   invoice.Organization.ID,
@@ -126,7 +130,7 @@ type ListInvoiceDto struct {
 	EndDate   time.Time
 }
 
-func (s *InvoiceUsecase) ListInvoice(dto ListInvoiceDto) ([]*CreatedInvoiceDto, error) {
+func (s *invoiceUsecase) ListInvoice(dto ListInvoiceDto) ([]*CreatedInvoiceDto, error) {
 	// 指定された日付範囲内の請求書を取得
 	invoices, err := s.invoiceRepo.FindByDueDateRange(dto.StartDate, dto.EndDate)
 	if err != nil {

@@ -5,7 +5,7 @@ import (
 	"github.com/take73/invoice-api-example/internal/application"
 )
 
-func RegisterRoutes(e *echo.Echo, invoiceUsecase *application.InvoiceUsecase) {
+func RegisterRoutes(e *echo.Echo, invoiceUsecase application.InvoiceUsecase) {
 	handler := NewInvoiceHandler(invoiceUsecase)
 
 	// ルート設定
