@@ -73,9 +73,18 @@ func (r *InvoiceRepository) Create(invoice *model.Invoice) (*model.Invoice, erro
 }
 
 func (r *InvoiceRepository) FindByDueDateRange(startDate, endDate time.Time) ([]*model.Invoice, error) {
-	var entities []entity.Invoice
+	type listInvoiceItem struct {
+		entity.Invoice
+		OrganizationName string `gorm:"column:organization_name"`
+		ClientName       string `gorm:"column:client_name"`
+	}
+
+	var entities []listInvoiceItem
 
 	err := r.db.Table("invoice").
+		Select("invoice.*, organization.name AS organization_name, client.name AS client_name").
+		Joins("JOIN organization ON invoice.organization_id = organization.organization_id").
+		Joins("JOIN client ON invoice.client_id = client.client_id").
 		Where("due_date >= ? AND due_date <= ?", startDate, endDate).
 		Order("due_date asc").
 		Find(&entities).Error
@@ -93,10 +102,12 @@ func (r *InvoiceRepository) FindByDueDateRange(startDate, endDate time.Time) ([]
 		invoices[i] = &model.Invoice{
 			ID: e.ID,
 			Organization: &model.Organization{
-				ID: e.OrganizationID,
+				ID:   e.OrganizationID,
+				Name: e.OrganizationName,
 			},
 			Client: &model.Client{
-				ID: e.ClientID,
+				ID:   e.ClientID,
+				Name: e.ClientName,
 			},
 			IssueDate:   e.IssueDate,
 			Amount:      e.PaymentAmount,

@@ -30,10 +30,12 @@ func Test_InvoiceRepository_Create(t *testing.T) {
 			input: input{
 				invoice: &model.Invoice{
 					Organization: &model.Organization{
-						ID: 1,
+						ID:   1,
+						Name: "株式会社サンプル",
 					},
 					Client: &model.Client{
-						ID: 1,
+						ID:   1,
+						Name: "取引先A",
 					},
 					IssueDate:   time.Date(2018, 04, 15, 0, 0, 0, 0, time.Local),
 					Amount:      decimal.NewFromInt(10000),
@@ -49,10 +51,12 @@ func Test_InvoiceRepository_Create(t *testing.T) {
 			want: &model.Invoice{
 				ID: 1,
 				Organization: &model.Organization{
-					ID: 1,
+					ID:   1,
+					Name: "株式会社サンプル",
 				},
 				Client: &model.Client{
-					ID: 1,
+					ID:   1,
+					Name: "取引先A",
 				},
 				IssueDate:   time.Date(2018, 04, 15, 0, 0, 0, 0, time.Local),
 				Amount:      decimal.NewFromInt(10000),
@@ -105,7 +109,7 @@ func Test_InvoiceRepository_FindByDueDateRange(t *testing.T) {
 		wantErr error
 	}{
 		{
-			name: "1件登録",
+			name: "2件取得",
 			input: input{
 				startDate: time.Date(2024, 1, 11, 0, 0, 0, 0, time.UTC),
 				endDate:   time.Date(2024, 2, 2, 23, 59, 59, 0, time.UTC),
@@ -113,8 +117,8 @@ func Test_InvoiceRepository_FindByDueDateRange(t *testing.T) {
 			want: []*model.Invoice{
 				{
 					ID:           2,
-					Organization: &model.Organization{ID: 1},
-					Client:       &model.Client{ID: 2},
+					Organization: &model.Organization{ID: 1, Name: "株式会社サンプル"},
+					Client:       &model.Client{ID: 2, Name: "取引先B"},
 					IssueDate:    time.Date(2024, 1, 5, 0, 0, 0, 0, time.UTC),
 					Amount:       decimal.NewFromInt(20000),
 					Fee:          decimal.NewFromInt(800),
@@ -127,8 +131,8 @@ func Test_InvoiceRepository_FindByDueDateRange(t *testing.T) {
 				},
 				{
 					ID:           3,
-					Organization: &model.Organization{ID: 2},
-					Client:       &model.Client{ID: 3},
+					Organization: &model.Organization{ID: 2, Name: "有限会社テスト"},
+					Client:       &model.Client{ID: 3, Name: "取引先C"},
 					IssueDate:    time.Date(2024, 1, 10, 0, 0, 0, 0, time.UTC),
 					Amount:       decimal.NewFromInt(30000),
 					Fee:          decimal.NewFromInt(1200),
@@ -141,8 +145,8 @@ func Test_InvoiceRepository_FindByDueDateRange(t *testing.T) {
 				},
 				{
 					ID:           4,
-					Organization: &model.Organization{ID: 2},
-					Client:       &model.Client{ID: 4},
+					Organization: &model.Organization{ID: 2, Name: "有限会社テスト"},
+					Client:       &model.Client{ID: 1, Name: "取引先A"},
 					IssueDate:    time.Date(2024, 1, 15, 0, 0, 0, 0, time.UTC),
 					Amount:       decimal.NewFromInt(40000),
 					Fee:          decimal.NewFromInt(1600),
