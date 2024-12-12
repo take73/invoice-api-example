@@ -10,6 +10,8 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+const dateFormat = "2006-01-02"
+
 type InvoiceHandler struct {
 	usecase *application.InvoiceUsecase
 }
@@ -27,29 +29,34 @@ type CreateInvoiceRequest struct {
 }
 
 type CreateInvoiceResponse struct {
-	ID               uint       `json:"id"`               // 請求書ID
-	OrganizationID   uint       `json:"organizationId"`   // 請求元企業
-	OrganizationName string     `json:"organizationName"` // 請求元企業名
-	ClientID         uint       `json:"clientId"`         // 請求先取引先ID
-	ClientName       string     `json:"clientName"`       // 請求先取引先名
-	IssueDate        CustomDate `json:"issueDate"`        // 発行日
-	Amount           int64      `json:"amount"`           // 請求金額
-	Fee              int64      `json:"fee"`              // 手数料
-	FeeRate          float64    `json:"feeRate"`          // 手数料率
-	Tax              int64      `json:"tax"`              // 消費税
-	TaxRate          float64    `json:"taxRate"`          // 消費税率
-	TotalAmount      int64      `json:"totalAmount"`      // 合計金額
-	DueDate          CustomDate `json:"dueDate"`          // 支払期日
-	Status           string     `json:"status"`           // ステータス
+	InvoiceItem
 }
 
 type CustomDate struct {
 	time.Time
 }
 
+// / UnmarshalJSON JSONフィールドから日付をデコード
 func (d *CustomDate) UnmarshalJSON(b []byte) error {
-	layout := `"2006-01-02"`
-	parsedTime, err := time.Parse(layout, string(b))
+	str := string(b)
+	// JSON の場合、クオートで囲まれているので削除
+	if len(str) >= 2 && str[0] == '"' && str[len(str)-1] == '"' {
+		str = str[1 : len(str)-1]
+	}
+	return d.unmarshalCommon(str)
+}
+
+// UnmarshalParam クエリパラメータから日付をデコード
+func (d *CustomDate) UnmarshalParam(param string) error {
+	return d.unmarshalCommon(param)
+}
+
+// unmarshalCommon 実際のパース処理を共通化
+func (d *CustomDate) unmarshalCommon(dateStr string) error {
+	if dateStr == "" {
+		return nil // 空文字の場合はスキップ
+	}
+	parsedTime, err := time.Parse(dateFormat, dateStr)
 	if err != nil {
 		return err
 	}
@@ -57,9 +64,12 @@ func (d *CustomDate) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+// MarshalJSON 日付をJSON形式でエンコード
 func (d CustomDate) MarshalJSON() ([]byte, error) {
-	const layout = "2006-01-02"
-	return []byte(`"` + d.Time.Format(layout) + `"`), nil
+	if d.IsZero() {
+		return []byte("null"), nil // ゼロ値の場合は null を返す
+	}
+	return []byte(`"` + d.Time.Format(dateFormat) + `"`), nil
 }
 
 func (h *InvoiceHandler) CreateInvoice(c echo.Context) error {
@@ -84,31 +94,33 @@ func (h *InvoiceHandler) CreateInvoice(c echo.Context) error {
 	}
 
 	response := CreateInvoiceResponse{
-		ID:               createdInvoice.ID,
-		OrganizationID:   createdInvoice.OrganizationID,
-		OrganizationName: createdInvoice.OrganizationName,
-		ClientID:         createdInvoice.ClientID,
-		ClientName:       createdInvoice.ClientName,
-		IssueDate:        CustomDate{createdInvoice.IssueDate},
-		Amount:           createdInvoice.Amount,
-		Fee:              createdInvoice.Fee,
-		FeeRate:          createdInvoice.FeeRate,
-		Tax:              createdInvoice.Tax,
-		TaxRate:          createdInvoice.TaxRate,
-		TotalAmount:      createdInvoice.TotalAmount,
-		DueDate:          CustomDate{createdInvoice.DueDate},
-		Status:           createdInvoice.Status,
+		InvoiceItem: InvoiceItem{
+			ID:               createdInvoice.ID,
+			OrganizationID:   createdInvoice.OrganizationID,
+			OrganizationName: createdInvoice.OrganizationName,
+			ClientID:         createdInvoice.ClientID,
+			ClientName:       createdInvoice.ClientName,
+			IssueDate:        CustomDate{createdInvoice.IssueDate},
+			Amount:           createdInvoice.Amount,
+			Fee:              createdInvoice.Fee,
+			FeeRate:          createdInvoice.FeeRate,
+			Tax:              createdInvoice.Tax,
+			TaxRate:          createdInvoice.TaxRate,
+			TotalAmount:      createdInvoice.TotalAmount,
+			DueDate:          CustomDate{createdInvoice.DueDate},
+			Status:           createdInvoice.Status,
+		},
 	}
 
 	return c.JSON(http.StatusOK, response)
 }
 
 type ListInvoiceRequest struct {
-	StartDate int64  `query:"startDate"` // UnixTime
-	EndDate   int64  `query:"endDate"`   // UnixTime
-	TimeZone  string `query:"timeZone"`
+	StartDate CustomDate `query:"startDate"`
+	EndDate   CustomDate `query:"endDate"`
 }
 
+// 一旦postとgetで使いまわし
 type InvoiceItem struct {
 	ID               uint       `json:"id"`               // 請求書ID
 	OrganizationID   uint       `json:"organizationId"`   // 請求元企業
@@ -137,19 +149,9 @@ func (h *InvoiceHandler) ListInvoice(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request"})
 	}
 
-	location, err := time.LoadLocation(req.TimeZone)
-	if err != nil {
-		log.Printf("Invalid timezone Error: %v", err)
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid timezone"})
-	}
-
-	// UNIXタイムを指定されたタイムゾーンに基づいて変換
-	startDate := time.Unix(req.StartDate, 0).In(location)
-	endDate := time.Unix(req.EndDate, 0).In(location)
-
 	dto := application.ListInvoiceDto{
-		StartDate: startDate,
-		EndDate:   endDate,
+		StartDate: req.StartDate.Time,
+		EndDate:   req.EndDate.Time,
 	}
 
 	invoices, err := h.usecase.ListInvoice(dto)
