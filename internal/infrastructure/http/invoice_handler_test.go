@@ -3,6 +3,7 @@ package http
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -12,6 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/take73/invoice-api-example/internal/application"
 	"github.com/take73/invoice-api-example/internal/infrastructure/http/testutils"
+	commonErrors "github.com/take73/invoice-api-example/internal/shared/errors"
 	"github.com/take73/invoice-api-example/internal/shared/validation"
 )
 
@@ -19,19 +21,16 @@ func Test_InvoiceHandler_CreateInvoice(t *testing.T) {
 	e := echo.New()
 	e.Validator = validation.NewCustomValidator()
 
-	mockUsecase := &testutils.MockInvoiceUsecase{}
-	handler := NewInvoiceHandler(mockUsecase)
-
 	tests := []struct {
 		name           string
-		setupMock      func()
+		setupMock      func(*testutils.MockInvoiceUsecase)
 		payload        map[string]interface{}
 		expectedStatus int
 		expectedBody   func(*testing.T, *httptest.ResponseRecorder)
 	}{
 		{
 			name: "success",
-			setupMock: func() {
+			setupMock: func(mockUsecase *testutils.MockInvoiceUsecase) {
 				mockUsecase.On("CreateInvoice", application.CreateInvoiceDto{
 					UserID:    1,
 					ClientID:  1,
@@ -74,7 +73,7 @@ func Test_InvoiceHandler_CreateInvoice(t *testing.T) {
 		},
 		{
 			name:      "userIdが-1の場合, invalid request",
-			setupMock: func() {}, // Mock is not called in this case
+			setupMock: func(mockUsecase *testutils.MockInvoiceUsecase) {}, // Mock is not called in this case
 			payload: map[string]interface{}{
 				"userId":    -1,
 				"clientId":  1,
@@ -92,7 +91,7 @@ func Test_InvoiceHandler_CreateInvoice(t *testing.T) {
 		},
 		{
 			name:      "userIdが0の場合, validation failed",
-			setupMock: func() {}, // Mock is not called in this case
+			setupMock: func(mockUsecase *testutils.MockInvoiceUsecase) {}, // Mock is not called in this case
 			payload: map[string]interface{}{
 				"userId":    0,
 				"clientId":  1,
@@ -110,7 +109,7 @@ func Test_InvoiceHandler_CreateInvoice(t *testing.T) {
 		},
 		{
 			name:      "clientIdが-1の場合, invalid request",
-			setupMock: func() {}, // Mock is not called in this case
+			setupMock: func(mockUsecase *testutils.MockInvoiceUsecase) {}, // Mock is not called in this case
 			payload: map[string]interface{}{
 				"userId":    1,
 				"clientId":  -1,
@@ -128,7 +127,7 @@ func Test_InvoiceHandler_CreateInvoice(t *testing.T) {
 		},
 		{
 			name:      "clientIdが0の場合, validation failed",
-			setupMock: func() {}, // Mock is not called in this case
+			setupMock: func(mockUsecase *testutils.MockInvoiceUsecase) {}, // Mock is not called in this case
 			payload: map[string]interface{}{
 				"userId":    1,
 				"clientId":  0,
@@ -146,7 +145,7 @@ func Test_InvoiceHandler_CreateInvoice(t *testing.T) {
 		},
 		{
 			name:      "issueDateのformatが不正の場合, invalid request",
-			setupMock: func() {}, // Mock is not called in this case
+			setupMock: func(mockUsecase *testutils.MockInvoiceUsecase) {}, // Mock is not called in this case
 			payload: map[string]interface{}{
 				"userId":    1,
 				"clientId":  1,
@@ -164,7 +163,7 @@ func Test_InvoiceHandler_CreateInvoice(t *testing.T) {
 		},
 		{
 			name:      "issueDateがない場合, validation failed",
-			setupMock: func() {}, // Mock is not called in this case
+			setupMock: func(mockUsecase *testutils.MockInvoiceUsecase) {}, // Mock is not called in this case
 			payload: map[string]interface{}{
 				"userId":   1,
 				"clientId": 1,
@@ -181,7 +180,7 @@ func Test_InvoiceHandler_CreateInvoice(t *testing.T) {
 		},
 		{
 			name: "amountが0の場合, success",
-			setupMock: func() {
+			setupMock: func(mockUsecase *testutils.MockInvoiceUsecase) {
 				mockUsecase.On("CreateInvoice", application.CreateInvoiceDto{
 					UserID:    1,
 					ClientID:  1,
@@ -224,7 +223,7 @@ func Test_InvoiceHandler_CreateInvoice(t *testing.T) {
 		},
 		{
 			name:      "dueDateのformatが不正の場合, invalid request",
-			setupMock: func() {}, // Mock is not called in this case
+			setupMock: func(mockUsecase *testutils.MockInvoiceUsecase) {}, // Mock is not called in this case
 			payload: map[string]interface{}{
 				"userId":    1,
 				"clientId":  1,
@@ -242,7 +241,7 @@ func Test_InvoiceHandler_CreateInvoice(t *testing.T) {
 		},
 		{
 			name:      "dueDateがない場合, validation failed",
-			setupMock: func() {}, // Mock is not called in this case
+			setupMock: func(mockUsecase *testutils.MockInvoiceUsecase) {}, // Mock is not called in this case
 			payload: map[string]interface{}{
 				"userId":    1,
 				"clientId":  1,
@@ -257,25 +256,88 @@ func Test_InvoiceHandler_CreateInvoice(t *testing.T) {
 				assert.Equal(t, "validation failed", response["error"])
 			},
 		},
+		{
+			name: "usecaseでNoFoundエラーが発生した場合, related company or client not found",
+			setupMock: func(mockUsecase *testutils.MockInvoiceUsecase) {
+				mockUsecase.On("CreateInvoice", application.CreateInvoiceDto{
+					UserID:    1,
+					ClientID:  1,
+					IssueDate: time.Date(2023, 12, 1, 0, 0, 0, 0, time.UTC),
+					Amount:    10000,
+					DueDate:   time.Date(2023, 12, 15, 0, 0, 0, 0, time.UTC),
+				}).Return(nil, commonErrors.ErrNotFound)
+			},
+			payload: map[string]interface{}{
+				"userId":    1,
+				"clientId":  1,
+				"issueDate": "2023-12-01",
+				"amount":    10000,
+				"dueDate":   "2023-12-15",
+			},
+			expectedStatus: http.StatusBadRequest,
+			expectedBody: func(t *testing.T, rec *httptest.ResponseRecorder) {
+				var response map[string]string
+				err := json.Unmarshal(rec.Body.Bytes(), &response)
+				assert.NoError(t, err)
+				assert.Equal(t, "related company or client not found", response["error"])
+			},
+		},
+		{
+			name: "usecaseでエラーが発生した場合, could not create invoice",
+			setupMock: func(mockUsecase *testutils.MockInvoiceUsecase) {
+				mockUsecase.On("CreateInvoice", application.CreateInvoiceDto{
+					UserID:    1,
+					ClientID:  1,
+					IssueDate: time.Date(2023, 12, 1, 0, 0, 0, 0, time.UTC),
+					Amount:    10000,
+					DueDate:   time.Date(2023, 12, 15, 0, 0, 0, 0, time.UTC),
+				}).Return(nil, errors.New("unexpected error"))
+			},
+			payload: map[string]interface{}{
+				"userId":    1,
+				"clientId":  1,
+				"issueDate": "2023-12-01",
+				"amount":    10000,
+				"dueDate":   "2023-12-15",
+			},
+			expectedStatus: http.StatusInternalServerError,
+			expectedBody: func(t *testing.T, rec *httptest.ResponseRecorder) {
+				var response map[string]string
+				err := json.Unmarshal(rec.Body.Bytes(), &response)
+				assert.NoError(t, err)
+				assert.Equal(t, "could not create invoice", response["error"])
+			},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.setupMock()
+			// 新しいモックインスタンスを作成
+			mockUsecase := &testutils.MockInvoiceUsecase{}
+			tt.setupMock(mockUsecase)
 
+			// ハンドラを新規作成
+			handler := NewInvoiceHandler(mockUsecase)
+
+			// リクエストのセットアップ
 			reqBody, _ := json.Marshal(tt.payload)
 			req := httptest.NewRequest(http.MethodPost, "/invoice", bytes.NewReader(reqBody))
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 			rec := httptest.NewRecorder()
 			c := e.NewContext(req, rec)
 
+			// ハンドラの実行
 			err := handler.CreateInvoice(c)
 			assert.NoError(t, err)
 			assert.Equal(t, tt.expectedStatus, rec.Code)
 
+			// レスポンスの検証
 			if tt.expectedBody != nil {
 				tt.expectedBody(t, rec)
 			}
+
+			// モックのアサーション
+			mockUsecase.AssertExpectations(t)
 		})
 	}
 }

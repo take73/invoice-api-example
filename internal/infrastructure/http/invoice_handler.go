@@ -1,13 +1,14 @@
 package http
 
 import (
+	"errors"
 	"log"
 	"net/http"
 
-	"github.com/take73/invoice-api-example/internal/application"
-	"github.com/take73/invoice-api-example/internal/shared/types"
-
 	"github.com/labstack/echo/v4"
+	"github.com/take73/invoice-api-example/internal/application"
+	commonErrors "github.com/take73/invoice-api-example/internal/shared/errors"
+	"github.com/take73/invoice-api-example/internal/shared/types"
 )
 
 type InvoiceHandler struct {
@@ -51,8 +52,13 @@ func (h *InvoiceHandler) CreateInvoice(c echo.Context) error {
 		DueDate:   req.DueDate.Time,
 	}
 
+	// 登録処理
 	createdInvoice, err := h.usecase.CreateInvoice(invoice)
 	if err != nil {
+		if errors.Is(err, commonErrors.ErrNotFound) {
+			log.Printf("Related entity not found: %v", err)
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "related company or client not found"})
+		}
 		log.Printf("Failed to create invoice Error: %v", err)
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "could not create invoice"})
 	}
