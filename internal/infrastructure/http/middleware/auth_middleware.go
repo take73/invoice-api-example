@@ -77,7 +77,7 @@ func AuthWithScopes(requiredScopes ...string) echo.MiddlewareFunc {
 				return echo.NewHTTPError(http.StatusUnauthorized, "Invalid token claims")
 			}
 
-			// スコープのチェック
+			// スコープのチェック TODO: 独立させてもよさそう
 			if !hasRequiredScopes(claims.Scope, requiredScopes) {
 				return echo.NewHTTPError(http.StatusForbidden, fmt.Sprintf("Insufficient scope: required %v", requiredScopes))
 			}
