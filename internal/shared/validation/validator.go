@@ -31,9 +31,3 @@ func validateCustomDate(fl validator.FieldLevel) bool {
 	}
 	return !date.Time.IsZero() // IsZeroだったら失敗
 }
-
-// ValidRate 割合の妥当性（0.0から1.0の範囲内かどうか）を検証します
-// TODO: validator と統合できるかも
-func ValidRate(rate float64) bool {
-	return rate >= 0.0 && rate <= 1.0
-}

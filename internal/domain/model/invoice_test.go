@@ -85,6 +85,20 @@ func Test_Invoice_Calculate(t *testing.T) {
 				TotalAmount: decimal.NewFromInt(10000),
 			},
 		},
+		{
+			name:    "手数料がマイナスの場合、手数料と税もマイナス",
+			amount:  -1000,
+			feeRate: 0.04,
+			taxRate: 0.1,
+			want: model.Invoice{
+				Amount:      decimal.NewFromInt(-1000),
+				FeeRate:     0.04,
+				Fee:         decimal.NewFromInt(-40),
+				Tax:         decimal.NewFromInt(-4),
+				TaxRate:     0.1,
+				TotalAmount: decimal.NewFromInt(-1044),
+			},
+		},
 	}
 
 	for _, tt := range tests {
