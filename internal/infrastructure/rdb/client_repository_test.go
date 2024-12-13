@@ -10,7 +10,9 @@ import (
 )
 
 func Test_ClientRepository_GetByID(t *testing.T) {
-	db := testutils.SetupTestDB(testutils.GetFuncName())
+	db, cleanup := testutils.SetupTestDB(testutils.GetFuncName())
+	defer cleanup()
+
 	db.Logger = db.Logger.LogMode(logger.Info)
 	// testutils.ExecSQLFile(db, "testdata/test_client_reposiroty_get_by_id.sql")
 

@@ -12,7 +12,9 @@ import (
 )
 
 func Test_InvoiceRepository_Create(t *testing.T) {
-	db := testutils.SetupTestDB(testutils.GetFuncName())
+	db, cleanup := testutils.SetupTestDB(testutils.GetFuncName())
+	defer cleanup()
+
 	db.Logger = db.Logger.LogMode(logger.Info)
 
 	type input struct {
@@ -92,7 +94,8 @@ func Test_InvoiceRepository_Create(t *testing.T) {
 }
 
 func Test_InvoiceRepository_FindByDueDateRange(t *testing.T) {
-	db := testutils.SetupTestDB(testutils.GetFuncName())
+	db, cleanup := testutils.SetupTestDB(testutils.GetFuncName())
+	defer cleanup()
 	db.Logger = db.Logger.LogMode(logger.Info)
 	// テストデータの挿入
 	testutils.ExecSQLFile(db, "testdata/test_invoice_repository_find_by_due_date_range.sql")

@@ -18,20 +18,21 @@ import (
 	"gorm.io/gorm/schema"
 )
 
-func SetupTestDB(dbName string) *gorm.DB {
+func SetupTestDB(dbName string) (*gorm.DB, func()) {
 	projectDir, err := GetProjectDir()
 	if err != nil {
 		panic(err)
 	}
 
-	db, err := connectDB("", 5)
+	// テスト用DBを作成するための接続
+	master, err := connectDB("", 5)
 	if err != nil {
 		panic(err)
 	}
-	dbConn, _ := db.DB()
-	defer dbConn.Close()
+	masterConn, _ := master.DB()
+	defer masterConn.Close()
 
-	if err := createDatabase(db, dbName); err != nil {
+	if err := createDatabase(master, dbName); err != nil {
 		panic(err)
 	}
 
@@ -42,7 +43,18 @@ func SetupTestDB(dbName string) *gorm.DB {
 	if err != nil {
 		panic(err)
 	}
-	return testDB
+
+	// クリーンアップ用の関数を返す
+	cleanup := func() {
+		sqlDB, err := testDB.DB()
+		if err == nil {
+			if err := sqlDB.Close(); err != nil {
+				fmt.Printf("failed to close database connection: %v\n", err)
+			}
+		}
+	}
+
+	return testDB, cleanup
 }
 
 func createDatabase(db *gorm.DB, dbName string) error {

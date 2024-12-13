@@ -10,7 +10,9 @@ import (
 )
 
 func Test_OrganizationRepository_GetByID(t *testing.T) {
-	db := testutils.SetupTestDB(testutils.GetFuncName())
+	db, cleanup := testutils.SetupTestDB(testutils.GetFuncName())
+	defer cleanup()
+
 	db.Logger = db.Logger.LogMode(logger.Info)
 	// testutils.ExecSQLFile(db, "testdata/test_organization_reposiroty_get_by_id.sql")
 
@@ -62,7 +64,9 @@ func Test_OrganizationRepository_GetByID(t *testing.T) {
 }
 
 func Test_OrganizationRepository_GetByUserID(t *testing.T) {
-	db := testutils.SetupTestDB(testutils.GetFuncName())
+	db, cleanup := testutils.SetupTestDB(testutils.GetFuncName())
+	defer cleanup()
+
 	db.Logger = db.Logger.LogMode(logger.Info)
 	// testutils.ExecSQLFile(db, "testdata/test_organization_reposiroty_get_by_user_id.sql")
 

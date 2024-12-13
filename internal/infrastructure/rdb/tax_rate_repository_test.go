@@ -10,7 +10,8 @@ import (
 )
 
 func Test_TaxRateRepository_GetRateByDate(t *testing.T) {
-	db := testutils.SetupTestDB(testutils.GetFuncName())
+	db, cleanup := testutils.SetupTestDB(testutils.GetFuncName())
+	defer cleanup()
 	db.Logger = db.Logger.LogMode(logger.Info)
 
 	type input struct {
