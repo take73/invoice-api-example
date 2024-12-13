@@ -1,18 +1,42 @@
 ### VSCodeの REST Clientを使っての動作確認用
 
+### 請求書登録できるtokenの取得
+POST https://{{$dotenv AUTH0_DOMAIN}}/oauth/token
+Content-Type: application/json
+
+{
+  "client_id": "{{$dotenv AUTH0_CLIENT_ID_B}}",
+  "client_secret": "{{$dotenv AUTH0_CLIENT_SECRET_B}}",
+  "audience": "{{$dotenv AUTH0_AUDIENCE}}",
+  "grant_type": "client_credentials"
+}
+
 ### 請求書登録
 POST http://localhost:1323/invoice
+Authorization: Bearer {{取得したtokenを設定}}
 Content-Type: application/json
 
 {
     "userId": 1,
     "clientId": 1,
     "issueDate": "2024-12-10",
-    "amount": 40000,
+    "amount": -40000,
     "dueDate": "2024-12-31"
 }
 
 
+### 請求書取得できるtokenの取得
+POST https://{{$dotenv AUTH0_DOMAIN}}/oauth/token
+Content-Type: application/json
+
+{
+  "client_id": "{{$dotenv AUTH0_CLIENT_ID_A}}",
+  "client_secret": "{{$dotenv AUTH0_CLIENT_SECRET_A}}",
+  "audience": "{{$dotenv AUTH0_AUDIENCE}}",
+  "grant_type": "client_credentials"
+}
+
 ### 請求書取得
 GET http://localhost:1323/invoice?startDate=2024-10-31&endDate=2024-12-31
+Authorization: Bearer {{取得したtokenを設定}}
 Content-Type: application/json
