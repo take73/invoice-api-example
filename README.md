@@ -21,7 +21,7 @@ CREATE DATABASE exampledb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 cp .env.local .env
 ```
 
-## 3. migrateを実行してテーブルを作成してください
+## 3. migrateを実行してテーブルを作成してください（SQLを手動で流してもok）
 ```
 make migrate-up
 ```
