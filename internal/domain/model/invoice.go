@@ -36,10 +36,6 @@ type Invoice struct {
 const defaultFeeRate = 0.04
 
 func NewInvoice(org *Organization, client *Client, amount int64, issueDate, dueDate time.Time) (*Invoice, error) {
-	if amount <= 0 {
-		return nil, fmt.Errorf("amount must be greater than 0")
-	}
-
 	feeRate := defaultFeeRate
 	if feeRateStr := os.Getenv("FEE_RATE"); feeRateStr != "" {
 		if parsedFeeRate, err := strconv.ParseFloat(feeRateStr, 64); err == nil {
@@ -60,7 +56,6 @@ func NewInvoice(org *Organization, client *Client, amount int64, issueDate, dueD
 	}, nil
 }
 
-// Calculate 手数料、消費税、請求金額を計算してセットする
 // Calculate 手数料、消費税、請求金額を計算してセットする
 func (i *Invoice) Calculate(taxRate float64) {
 	// 支払金額 (Amount) を Decimal に変換
