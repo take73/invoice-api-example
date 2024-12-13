@@ -51,7 +51,10 @@ ____________________________________O/_______
 
 
 
-# 参考
+# 補足
 ## Authorization
+今回の実装では、単純にクライアントが read:invoice と write:invoice の両方を含むスコープを返す設定にしています。そのため、ユーザーごとに細かなアクセス制御が必要な場合は、ロールベースのアクセスコントロール (RBAC) を検討します
+
 - [Auth0による認可](https://auth0.com/docs/quickstart/backend/golang/interactive)を行う
 - [go-jwt-middleware](https://github.com/auth0/go-jwt-middleware)
+
