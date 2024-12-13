@@ -1,6 +1,8 @@
 package application
 
 import (
+	"os"
+	"strconv"
 	"time"
 
 	"github.com/take73/invoice-api-example/internal/domain/model"
@@ -73,12 +75,21 @@ func (s *invoiceUsecase) CreateInvoice(invoice CreateInvoiceDto) (*InvoiceDto, e
 		return nil, err
 	}
 
+	// 手数料率を取得
+	var feeRate float64
+	if feeRateStr := os.Getenv("FEE_RATE"); feeRateStr != "" {
+		if parsedFeeRate, err := strconv.ParseFloat(feeRateStr, 64); err == nil {
+			feeRate = parsedFeeRate
+		}
+	}
+
 	newInvoice, err := model.NewInvoice(
 		organization,
 		client,
 		invoice.Amount,
 		invoice.IssueDate,
 		invoice.DueDate,
+		feeRate,
 	)
 	if err != nil {
 		return nil, err

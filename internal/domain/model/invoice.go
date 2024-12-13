@@ -1,12 +1,10 @@
 package model
 
 import (
-	"fmt"
-	"os"
-	"strconv"
 	"time"
 
 	"github.com/shopspring/decimal"
+	"github.com/take73/invoice-api-example/internal/shared/validation"
 )
 
 type InvoiceStatus string
@@ -33,23 +31,18 @@ type Invoice struct {
 	Status       InvoiceStatus   // ステータス
 }
 
-const defaultFeeRate = 0.04
+const DefaultFeeRate = 0.04
 
-func NewInvoice(org *Organization, client *Client, amount int64, issueDate, dueDate time.Time) (*Invoice, error) {
-	feeRate := defaultFeeRate
-	if feeRateStr := os.Getenv("FEE_RATE"); feeRateStr != "" {
-		if parsedFeeRate, err := strconv.ParseFloat(feeRateStr, 64); err == nil {
-			feeRate = parsedFeeRate
-		} else {
-			return nil, fmt.Errorf("invalid FEE_RATE value: %v", err)
-		}
+func NewInvoice(org *Organization, client *Client, amount int64, issueDate, dueDate time.Time, feeRate float64) (*Invoice, error) {
+	var rate float64
+	if !validation.ValidRate(feeRate) {
+		rate = DefaultFeeRate
 	}
-
 	return &Invoice{
 		Organization: org,
 		Client:       client,
 		Amount:       decimal.NewFromInt(amount),
-		FeeRate:      feeRate,
+		FeeRate:      rate,
 		IssueDate:    issueDate,
 		DueDate:      dueDate,
 		Status:       StatusPending,
