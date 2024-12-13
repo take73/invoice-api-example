@@ -11,7 +11,7 @@ import (
 	"github.com/take73/invoice-api-example/internal/infrastructure/http/middleware/testutil"
 )
 
-func Test_Middleware_EnsureValidTokenWithScopes(t *testing.T) {
+func Test_Middleware_AuthWithScopes(t *testing.T) {
 	e := echo.New()
 
 	tests := []struct {
@@ -61,7 +61,7 @@ func Test_Middleware_EnsureValidTokenWithScopes(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Middleware to test
-			e.Use(EnsureValidTokenWithScopes(tt.scope))
+			e.Use(AuthWithScopes(tt.scope))
 
 			// Mock handler
 			e.GET("/secure-data", func(c echo.Context) error {

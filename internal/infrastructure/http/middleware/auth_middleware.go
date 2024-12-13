@@ -25,8 +25,8 @@ func (c CustomClaims) Validate(ctx context.Context) error {
 	return nil
 }
 
-// EnsureValidTokenWithScopes ensures the JWT is valid and contains the required scopes.
-func EnsureValidTokenWithScopes(requiredScopes ...string) echo.MiddlewareFunc {
+// AuthWithScopes ensures the JWT is valid and contains the required scopes.
+func AuthWithScopes(requiredScopes ...string) echo.MiddlewareFunc {
 	issuerURLString := fmt.Sprintf("https://%s/", os.Getenv("AUTH0_DOMAIN"))
 
 	// URLをパース
